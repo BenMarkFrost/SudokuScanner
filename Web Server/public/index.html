@@ -5,17 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js" ></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"> </script>
-    <script src="https://docs.opencv.org/master/opencv.js" defer></script>
+    <script src="js/tf.min.js" ></script>
+    <script src="js/coco-ssd.js"> </script>
+    <script src="js/opencv.js" defer></script>
     <script src="js/video.js" defer></script>
-    <script src="js/detectPuzzle.js" defer></script>
 </head>
 <body>
     <p>Real Time Sudoku Solver</p>
 
-    <div>
-        <video style="object-fit:fill;" hidden id="videoInput"></video> <canvas id="canvasOutput"></canvas>
+    <div class="container">
+        <video hidden id="videoInput"></video> <canvas id="canvasOutput"></canvas>
     </div>
 
 </body>

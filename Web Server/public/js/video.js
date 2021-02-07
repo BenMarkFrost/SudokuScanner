@@ -1,18 +1,22 @@
 //import cv from "opencv.js";
 
 let video = document.getElementById("videoInput"); // video is the id of video tag
+let mobile = Boolean;
+mobile = false;
 
-if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
     console.log("Mobile")
+//     // video.width = screen.availWidth;
+//     // video.height = (video.width / 3) * 4;
+//     mobile = true;
     video.width = 480;
     video.height = 640;
 } else {
     console.log("Desktop")
-    console.log(screen.availHeight)
-    console.log(screen.height)
-    console.log(screen.height * 0.96)
-    video.height = screen.availHeight;
-    video.width = (video.height / 3) * 4;
+//     // video.height = screen.availHeight;
+//     // video.width = (video.height / 3) * 4;
+    video.width = 640;
+    video.height = 480;
 }
 
 // video.width = 640;
@@ -20,9 +24,9 @@ if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 
 function runWebcamCapture() {
 
-    let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-    let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
-    let cap = new cv.VideoCapture(video)
+    // let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    // let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+    // let cap = new cv.VideoCapture(video)
 
     // Not sure if this is actually needed.
     video.setAttribute('autoplay', '');
@@ -46,6 +50,9 @@ function runWebcamCapture() {
                     // cap.read(src)
                     // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
                     // cv.imshow("canvasOutput", dst)
+
+                    // video.width = video.width * 2
+                    // video.height = video.height * 2
 
                     model.detect(video).then(predictions => {
                         console.log('Predictions: ', predictions);
@@ -74,10 +81,14 @@ function runWebcamCapture() {
 
                         predictions.forEach(prediction => {
 
-                            const x = prediction.bbox[0];
-                            const y = prediction.bbox[1];
-                            const width = prediction.bbox[2];
-                            const height = prediction.bbox[3];
+                            let i = 1;
+
+                            if (mobile){ i = 1; }
+
+                            const x = i * prediction.bbox[0];
+                            const y = i * prediction.bbox[1];
+                            const width = i * prediction.bbox[2];
+                            const height = i * prediction.bbox[3];
 
                             ctx.strokeStyle = "#00FFFF";
                             ctx.lineWidth = 2;
