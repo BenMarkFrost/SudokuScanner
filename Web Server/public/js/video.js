@@ -1,9 +1,22 @@
 //import cv from "opencv.js";
 
-
 let video = document.getElementById("videoInput"); // video is the id of video tag
-video.width = 640;
-video.height = 480;
+
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    console.log("Mobile")
+    video.width = 480;
+    video.height = 640;
+} else {
+    console.log("Desktop")
+    console.log(screen.availHeight)
+    console.log(screen.height)
+    console.log(screen.height * 0.96)
+    video.height = screen.availHeight;
+    video.width = (video.height / 3) * 4;
+}
+
+// video.width = 640;
+// video.height = 480;
 
 function runWebcamCapture() {
 
@@ -11,11 +24,12 @@ function runWebcamCapture() {
     let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
     let cap = new cv.VideoCapture(video)
 
+    // Not sure if this is actually needed.
     video.setAttribute('autoplay', '');
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    navigator.mediaDevices.getUserMedia({ video: {facingMode: 'environment',}, audio: false })
         .then(function(stream) {
 
             video.srcObject = stream;
