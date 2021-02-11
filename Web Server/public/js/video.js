@@ -19,19 +19,13 @@ if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.tes
     video.height = 480;
 }
 
-// video.width = 640;
-// video.height = 480;
-
-function runWebcamCapture() {
-
-    // let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-    // let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
-    // let cap = new cv.VideoCapture(video)
+async function runWebcamCapture() {
 
     // Not sure if this is actually needed.
     video.setAttribute('autoplay', '');
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
+
 
     navigator.mediaDevices.getUserMedia({ video: {facingMode: 'environment',}, audio: false })
         .then(function(stream) {
@@ -41,18 +35,10 @@ function runWebcamCapture() {
                 video.play();
             };
 
-            const FPS = 30
-
             cocoSsd.load().then(model => {
                 
                 
                 function process(){
-                    // cap.read(src)
-                    // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-                    // cv.imshow("canvasOutput", dst)
-
-                    // video.width = video.width * 2
-                    // video.height = video.height * 2
 
                     model.detect(video).then(predictions => {
                         console.log('Predictions: ', predictions);
@@ -94,13 +80,16 @@ function runWebcamCapture() {
                             ctx.lineWidth = 2;
                             ctx.strokeRect(x, y, width, height);
 
+                            let confidence = prediction.score.toPrecision(2);
+                            let label = prediction.class + " " + confidence;
+
                             ctx.fillStyle = "#00FFFF";
-                            const textWidth = ctx.measureText(prediction.class).width;
+                            const textWidth = ctx.measureText(label).width;
                             const textHeight = parseInt(font,10);
                             ctx.fillRect(x,y,textWidth+4, textHeight+4);
 
                             ctx.fillStyle = "#000000";
-                            ctx.fillText(prediction.class, x, y);
+                            ctx.fillText(label, x, y);
 
                         })
 
