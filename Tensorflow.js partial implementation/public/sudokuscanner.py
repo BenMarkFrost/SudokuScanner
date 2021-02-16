@@ -1,6 +1,0 @@
-
-def scan(img):
-
-    
-
-    return {}
