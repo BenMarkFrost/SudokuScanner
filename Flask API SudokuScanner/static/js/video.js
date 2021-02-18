@@ -1,9 +1,9 @@
 //import cv from "opencv.js";
 
-let video = document.getElementById("videoInput"); // video is the id of video tag
+let video = document.getElementById("videoInput");
 let mobile = Boolean;
 mobile = false;
-let period = 20;
+let period = 5;
 let count = 0;
 
 if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
@@ -17,11 +17,6 @@ if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.tes
 }
 
 async function runWebcamCapture() {
-
-    // Not sure if this is actually needed.
-    // video.setAttribute('autoplay', '');
-    // video.setAttribute('muted', '');
-    // video.setAttribute('playsinline', '');
 
 
     // TODO Specifying framerate doesn't work here
@@ -48,25 +43,41 @@ async function runWebcamCapture() {
                     ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
                     ctx.drawImage(video,0, 0,video.width,video.height);
                     
-                    let border = toAPI(canvas);
+                    let sImg = toAPI(canvas);
+                    
 
-                    console.log("Border: " + border);
+                    if (sImg){
 
-                    if (border){
-                        console.log(border[0][0][0] + " " + border[0][0][1]);
-                        console.log(border[1][0][0] + " " + border[1][0][1]);
+                        console.log(sImg)
 
-                        ctx.beginPath();
-                        ctx.moveTo(border[0][0][0], border[0][0][1]);
-                        ctx.lineTo(border[1][0][0], border[1][0][1]);
-                        ctx.lineTo(border[2][0][0], border[2][0][1]);
-                        ctx.lineTo(border[3][0][0], border[3][0][1]);
-                        ctx.lineTo(border[0][0][0], border[0][0][1]);
+                        // console.log("Border: " + border);
 
-                        ctx.lineWidth = 10;
-                        ctx.strokeStyle = '#ff0000';
-                        ctx.stroke();
+                        // ctx.drawImage(solutionImg, 0, 0, video.width, video.height);
+                        
+                        try{
+                            let src = new cv.Mat(sImg.height, sImg.width, cv.CV_8UC4);
+
+                            cv.imshow("canvasOutput", src);
+                        } catch (error){
+                            console.error("Error: " + error);
+                        }
                     }
+
+                    // if (border){
+                    //     console.log(border[0][0][0] + " " + border[0][0][1]);
+                    //     console.log(border[1][0][0] + " " + border[1][0][1]);
+
+                    //     ctx.beginPath();
+                    //     ctx.moveTo(border[0][0][0], border[0][0][1]);
+                    //     ctx.lineTo(border[1][0][0], border[1][0][1]);
+                    //     ctx.lineTo(border[2][0][0], border[2][0][1]);
+                    //     ctx.lineTo(border[3][0][0], border[3][0][1]);
+                    //     ctx.lineTo(border[0][0][0], border[0][0][1]);
+
+                    //     ctx.lineWidth = 10;
+                    //     ctx.strokeStyle = '#ff0000';
+                    //     ctx.stroke();
+                    // }
                 }
 
                 requestAnimationFrame(() => {

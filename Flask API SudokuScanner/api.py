@@ -26,17 +26,13 @@ def frame():
         client_id = request.form.get("id")
         frame = Image.open(request.files['frame'])
 
-        border = sudokuscanner.scan(frame)
+        solutionData = sudokuscanner.scan(frame)
 
-        # returnDict = {"id": client_id, "border": border}
-
-        # returnFile = json.dumps(returnDict)
-
-        return {"id": client_id, "border": border}
+        return {"id": client_id, "data": solutionData}
 
     except Exception as e:
         print("Post /frame error: " + str(e))
         return e
 
 
-app.run()
+app.run(threaded=True)

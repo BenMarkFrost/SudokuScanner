@@ -2,8 +2,10 @@
 let client_id = 0;
 let latencyTracker = {};
 let rollingAverageTracker = [];
-let border;
+let solutionImg;
 let latencyParagraph = document.getElementById("latency")
+
+//TODO only play frames once API response received
 
 function displayLatency(id){
 
@@ -64,16 +66,7 @@ function upload(frame){
             displayLatency(response["id"]);
 
             // Make this work for more than one puzzle
-            border = response["border"]
-
-            // console.log(border);
-
-            // displayBorder(border);
-
-
-            // console.log(response["id"])
- 
-            // console.log("Almost parsing");
+            solutionImg = response["img"]
 
         }
         else{
@@ -95,6 +88,6 @@ function toAPI(canvas){
 
     canvas.toBlob(upload, 'image/jpeg');
 
-    return border;
+    return solutionImg;
 
 }
