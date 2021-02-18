@@ -12,8 +12,8 @@ if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.tes
     video.height = 640;
 } else {
     console.log("Desktop")
-    video.width = 1000;
-    video.height = 750;
+    video.width = 640;
+    video.height = 480;
 }
 
 async function runWebcamCapture() {
@@ -41,27 +41,19 @@ async function runWebcamCapture() {
 
                     // Drawing Original Video
                     ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
-                    ctx.drawImage(video,0, 0,video.width,video.height);
+                    ctx.drawImage(video, 0,0,video.width,video.height);
                     
-                    let sImg = toAPI(canvas);
-                    
+                    let img = toAPI(canvas);
 
-                    if (sImg){
-
-                        console.log(sImg)
-
-                        // console.log("Border: " + border);
-
-                        // ctx.drawImage(solutionImg, 0, 0, video.width, video.height);
-                        
-                        try{
-                            let src = new cv.Mat(sImg.height, sImg.width, cv.CV_8UC4);
-
-                            cv.imshow("canvasOutput", src);
-                        } catch (error){
-                            console.error("Error: " + error);
-                        }
+                    if (img){
+                        document.querySelector("#image").src = img;
                     }
+
+                    // document.getElementById("preview").src = img;
+                    // document.body.appendChild(img);
+
+                    // ctxOut.clearRect(0,0, ctxOut.canvas.width, ctxOut.canvas.height);
+                    // ctxOut.drawImage(img, 0,0,video.width, video.height)
 
                     // if (border){
                     //     console.log(border[0][0][0] + " " + border[0][0][1]);

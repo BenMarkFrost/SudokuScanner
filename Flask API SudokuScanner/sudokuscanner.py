@@ -6,13 +6,16 @@ import scipy
 import cv2
 import os
 import digitfinder
+from io import BytesIO
+from PIL import Image
+
+buffer = BytesIO()
+
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
 
 def scan(img):
-
-    solutionData = {}
 
     img = np.array(img)
 
@@ -26,8 +29,8 @@ def scan(img):
         pass
 
     if border is None:
-        solutionData["border"] = [[0,0][0,0]]
-        return None
+        print("No Sudoku Found")
+        return np.zeros(img.shape)
         # cv2.drawContours(img, [border], -1, (0, 255, 0), 2)
         # cv2.imshow("Bordered", img)
         # cv2.waitKey(0)
@@ -43,28 +46,56 @@ def scan(img):
 
     combinedDigits = digitfinder.combineDigits(cleanedDigits)
 
-    # simulating coloured digits here for later
     combinedDigits = cv2.cvtColor(np.float32(combinedDigits),cv2.COLOR_GRAY2RGB)
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 
-    # saveImg("Digits", skewedSolution)
-
-    # print (skewedSolution.shape, gray.shape)
-
-    # gray = np.float64(gray)
-    # skewedSolution = np.float64(skewedSolution)
-
-    # superimposedDigits = cv2.add(skewedSolution, gray)
-
     outputImage = digitfinder.combineBorderAndImg(border, skewedSolution)
+
 
     # cv2.imshow("Combined", outputImage)
     # cv2.waitKey(0)
 
     # saveImg("Digits", outputImage)
 
+    # solutionData["border"] = border
+    # solutionData["digits"] = [1: [40,50], 4: [40, 75], 7:[200,300]]]
 
+    # Add section about compression here, looks like compressed by about 40%
+    # saveImg("Outputs", outputImage)
+
+
+    # pilImage = Image.fromarray(np.uint8(outputImage))
+
+    # global buffer
+
+    # pilImage.save(buffer, "JPEG", quality=10)
+
+    # print(buffer)
+
+    # with open("cache/Outputs/compressed.jpg", "w") as temp:
+    #     temp.write(buffer.contents())
+
+    # print(encoded)
+
+    # decoded = cv2.imdecode(encoded, 1)
+
+    # cv2.imshow("After encode", decoded)
+    # cv2.waitKey(0)
+
+    # decoded = cv2.imdecode(encoded, 0)
+
+    # cv2.imshow("Decoded", decoded)
+    # cv2.waitKey(0)
+
+    # print(decoded.shape)
+
+    # for row in decoded:
+    #     print(row)
+
+    # print(decoded)
+
+    # saveImg("Outputs", outputImage)
 
     return outputImage
 
@@ -83,4 +114,4 @@ def saveImg(folder, img):
     num = num + 1
 
 
-scan(imutils.resize(cv2.imread("IMG_2489.JPG"), 640))
+# scan(imutils.resize(cv2.imread("IMG_2489.JPG"), 640))

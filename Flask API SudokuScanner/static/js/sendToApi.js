@@ -4,6 +4,8 @@ let latencyTracker = {};
 let rollingAverageTracker = [];
 let solutionImg;
 let latencyParagraph = document.getElementById("latency")
+let best;
+let worst;
 
 //TODO only play frames once API response received
 
@@ -19,8 +21,7 @@ function displayLatency(id){
         // console.log(timeOfAPICall);
         // let d = new Date();
         latency = Date.now() - timeOfAPICall;
-
-        
+        console.log("Received " + id)
     } catch (error) {
         console.error("Response without API call");
     }
@@ -57,16 +58,56 @@ function upload(frame){
  
     let xhr = new XMLHttpRequest();
     xhr.open('POST', window.location.origin + '/frame', true);
+    xhr.responseType = "blob";
     xhr.onload = function () {
         if (this.status === 200) {
-            let response = JSON.parse(this.response);
+            // let response = JSON.parse(this.response);
             // console.log(response);
 
-            console.log("Received " + response["id"]);
-            displayLatency(response["id"]);
+            var urlCreator = window.URL || window.webkitURL;
+            solutionImg = urlCreator.createObjectURL(this.response);
+
+            console.log(this.response)
+            
+            console.log(xhr.getResponseHeader("x-filename"))
+
+            displayLatency(xhr.getResponseHeader("x-filename"))
+
+            // returnedImg = this.response;
+
+            // var file = new File([returnedImg], "response.jpg", { type: "image/jpeg", });
+            
+            // console.log(file);
+
+            // solutionImg = file;
+
+            // console.log("Received " + response["id"]);
+            // displayLatency(response["id"]);
 
             // Make this work for more than one puzzle
-            solutionImg = response["img"]
+            // solutionImg = response["img"]
+
+            // img = this.response
+            // console.log(type(img)
+
+            // print(solutionImg)
+
+            // var resp = this.response;
+            // var byteArray = new Uint8Array(resp);
+            // var str = String.fromCharCode.apply(null, byteArray);
+            // var src = "data:image/jpeg;base64," + btoa(str);
+            // // console.log(btoa(str));
+            // var img = document.createElement("img");
+            // img.src = src;
+
+
+            // let vidOut = document.getElementById("canvasOutput");
+            // vidOut.
+
+            // solutionImg = src
+
+            // var img = document.createElement("img");
+            // img.src = src;
 
         }
         else{
