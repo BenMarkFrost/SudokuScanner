@@ -34,6 +34,8 @@ def frame():
 
         outputImage = sudokuscanner.scan(frame)
 
+        # outputImage = np.zeros(np.array(frame).shape)
+
         # result, encoded = cv2.imencode('.jpg', outputImage, [int(cv2.IMWRITE_JPEG_QUALITY), 5])
 
         # print(outputImage.shape)
@@ -44,7 +46,7 @@ def frame():
 
         imgIO = BytesIO()
         pilImg = Image.fromarray((outputImage).astype(np.uint8))
-        pilImg.save(imgIO, 'JPEG', quality=100)
+        pilImg.save(imgIO, 'JPEG', quality=50)
         imgIO.seek(0)
 
 

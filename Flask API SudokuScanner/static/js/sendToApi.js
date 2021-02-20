@@ -1,11 +1,13 @@
 
 let client_id = 0;
+let frameBuffer = {};
 let latencyTracker = {};
 let rollingAverageTracker = [];
-let solutionImg;
+let data = [];
 let latencyParagraph = document.getElementById("latency")
-let best;
-let worst;
+let best = 1000000;
+let worst = 0;
+var urlCreator = window.URL || window.webkitURL;
 
 //TODO only play frames once API response received
 
@@ -22,8 +24,18 @@ function displayLatency(id){
         // let d = new Date();
         latency = Date.now() - timeOfAPICall;
         console.log("Received " + id)
+
+        frame = frameBuffer[id];
+        delete frameBuffer[id];
+
+        tempFrame = urlCreator.createObjectURL(frame);
+
+        document.querySelector("#video").src = tempFrame;
+
+        // data.push(tempFrame);
+
     } catch (error) {
-        console.error("Response without API call");
+        console.error(error);
     }
 
     rollingAverageTracker.push(latency)
@@ -39,12 +51,18 @@ function displayLatency(id){
         sum += rollingAverageTracker[i];
     }
 
-    latency = sum / rollingAverageTracker.length
+    latency = Math.ceil(sum / rollingAverageTracker.length)
+
+    if (latency > worst){
+        worst = latency;
+    } else if (latency < best){
+        best = latency;
+    }
 
     // console.log(sum);
 
     // console.log(rollingAverageTracker)
-    latencyParagraph.innerHTML = "Frame " + id + ": " + Math.ceil(latency) + "ms latency";
+    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms latency. Worst: " + worst + ", best: " + best;
 
 }
 
@@ -54,8 +72,7 @@ function upload(frame){
     let formdata = new FormData();
     formdata.append("frame", frame);
     formdata.append("id", client_id)
-    // formdata.append("threshold", scoreThreshold);
- 
+    
     let xhr = new XMLHttpRequest();
     xhr.open('POST', window.location.origin + '/frame', true);
     xhr.responseType = "blob";
@@ -64,14 +81,18 @@ function upload(frame){
             // let response = JSON.parse(this.response);
             // console.log(response);
 
-            var urlCreator = window.URL || window.webkitURL;
             solutionImg = urlCreator.createObjectURL(this.response);
 
-            console.log(this.response)
             
-            console.log(xhr.getResponseHeader("x-filename"))
+            document.querySelector("#image").src = solutionImg;
 
+            // data.push(solutionImg);
+
+            // console.log(this.response)
+            
             displayLatency(xhr.getResponseHeader("x-filename"))
+
+            // console.log(xhr.getResponseHeader("x-filename"))
 
             // returnedImg = this.response;
 
@@ -114,21 +135,27 @@ function upload(frame){
             console.error(xhr);
         }
     };
-    if (!(Object.keys(latencyTracker).length > 20)) {
+    if (!(Object.keys(latencyTracker).length > 200)) {
         xhr.send(formdata);
         console.log("Sending " + client_id);
-        // let d = new Date();
         latencyTracker[client_id] = Date.now();
-        // console.log(latencyTracker);
+        frameBuffer[client_id] = frame;
+
     } else {
-        console.error("Waiting on more than 20 frames...")
+        console.error("Waiting on more than 200 frames...")
+        frameBugger = []
+        latencyTracker = []
     }
 }
 
 function toAPI(canvas){
 
+    // TODO add toggle button for frame sync
+
+    data = [];
+
     canvas.toBlob(upload, 'image/jpeg');
 
-    return solutionImg;
+    return data;
 
 }

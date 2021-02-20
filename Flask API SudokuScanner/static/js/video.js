@@ -43,10 +43,20 @@ async function runWebcamCapture() {
                     ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
                     ctx.drawImage(video, 0,0,video.width,video.height);
                     
-                    let img = toAPI(canvas);
+                    let data = toAPI(canvas);
 
-                    if (img){
-                        document.querySelector("#image").src = img;
+                    // console.log(data);
+
+                    // console.log("one")
+                    // console.log(data[0])
+                    // console.log("two")
+                    // console.log(data[1])
+                    
+
+                    if (data[0]){
+                        // console.log(img);
+                        // console.log(video);
+                        
                     }
 
                     // document.getElementById("preview").src = img;

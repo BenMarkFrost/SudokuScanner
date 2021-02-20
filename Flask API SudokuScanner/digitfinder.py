@@ -5,7 +5,12 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import os
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
 # import tensorflow as tf
+from tensorflow import keras
+
+model = keras.models.load_model("model/digitModel.h5")
 
 def combineBorderAndImg(border, img):
     # Convert border coordinates to image
@@ -51,6 +56,14 @@ def cleanDigits(digits):
         tempRow = []
         for img in row:
 
+            # Document how I adjusted the threshold to make it work for digits
+
+            #Different types of filtering
+            # blurred = cv2.GaussianBlur(img, (7,7), 0)
+            # blurred = cv2.bilateralFilter(img, 9, 75, 75)
+
+            # threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
+
             threshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
             cleaned = clear_border(threshold)
@@ -59,7 +72,7 @@ def cleanDigits(digits):
             contours = imutils.grab_contours(contours)
 
             if len(contours) == 0:
-                tempRow.append(np.zeros(cleaned.shape))
+                tempRow.append(None)
                 continue
 
             biggestContour = max(contours, key = cv2.contourArea)
@@ -71,12 +84,13 @@ def cleanDigits(digits):
             total = img.shape[0] * img.shape[1]
             percentageFilled = numFilled * 100 / total
 
-            if percentageFilled < 1:
-                tempRow.append(np.zeros(cleaned.shape))
+            if percentageFilled < 3:
+                tempRow.append(None)
                 continue
             else:
                 cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
                 tempRow.append(cleaned)
+                # saveImg("Digits", cleaned)
 
         cleanedDigits.append(tempRow)
     
@@ -84,8 +98,23 @@ def cleanDigits(digits):
     
     # saveImg("Digits", cleaned)
 
+def saveImg(folder, img):
+    num = 0
+    directory = "cache/"
+    while True:
+        try:
+            f = open(directory + folder + "/" + folder + str(num) + ".jpg", 'r')
+            f.close()
+            num = num + 1
+        except:
+            break
+
+    cv2.imwrite(directory + folder + "/" + folder + str(num) + ".jpg", img)
+    num = num + 1
+
 def dewarp(img, border):
-    dewarp = four_point_transform(img, border.reshape(4,2))
+
+    dewarp = four_point_transform(img, border)
 
     size = 300
 
@@ -94,6 +123,7 @@ def dewarp(img, border):
     # cv2.imshow("deskewed", puzzle)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
+
     return dewarp
 
 def warp(img, toWarp, border):
@@ -102,8 +132,17 @@ def warp(img, toWarp, border):
 
     (w,h,d) = toWarp.shape
 
+    # print(border)
+
     # Border coordinates are sent in a weird order, reordering
-    border = [border[0][0], border[3][0], border[1][0], border[2][0]]
+    border = [border[0], border[3], border[1], border[2]]
+
+    # print(border)
+
+    if (border[1][1] > border[2][1]):
+        border = [border[2], border[0], border[3], border[1]]
+    
+    # print(border)
 
     pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
     pts2 = np.float32(border)
@@ -116,11 +155,52 @@ def warp(img, toWarp, border):
     return dst
 
 
-def classifyDigits(digits):
+def renderDigits(digits, width):
+
+    rendered = []
 
     for row in digits:
+        tempRow = []
         for digit in row:
-            digit = cv2.resize(digit, (28,28))
+            bg = renderIndividualDigit(digit, width)
+            tempRow.append(bg)
+        rendered.append(tempRow)
+    
+    return rendered
+            
+
+def renderIndividualDigit(digit, width):
+    bg = np.zeros((width, width, 3))
+    if digit is not None:
+        bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+    return bg
+
+def classifyDigits(digits):
+    # TODO find a faster CNN
+
+    global model
+
+    toNumbers = []
+
+    for row in digits:
+        tempRow = []
+        for digit in row:
+            if digit is None:
+                tempRow.append(None)
+                continue
+            else:
+                digit = cv2.resize(digit, (28,28))
+                # cv2.imshow("resized", digit)
+                # cv2.waitKey(0)
+
+                result = np.argmax(model.predict(digit.reshape(1, 28, 28, 1)))
+                # result = 0
+
+                tempRow.append(result)
+                # print(result)
+        toNumbers.append(tempRow)
+
+    return toNumbers
 
             
 
@@ -154,7 +234,7 @@ def findContours(img):
 
     biggestContour = None
 
-    if (cv2.contourArea(contours[0]) < 100000): return None
+    if (cv2.contourArea(contours[0]) < 25000): return None
 
     for c in contours:
 
@@ -167,4 +247,4 @@ def findContours(img):
 
     # print(cv2.contourArea(biggestContour))
 
-    return biggestContour
+    return biggestContour.reshape(4,2)
