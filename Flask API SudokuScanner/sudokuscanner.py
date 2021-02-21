@@ -43,6 +43,8 @@ def scan(img):
 
     cleanedDigits = digitfinder.cleanDigits(digits)[2:]
 
+    # print("getting here")
+
     # for i in cleanedDigits:
     #     for digit in i:
     #         cv2.imshow("output", digit)
@@ -54,6 +56,8 @@ def scan(img):
     # CNN for number recognition
 
     toNumbers = digitfinder.classifyDigits(cleanedDigits)
+
+    # print(len(toNumbers))
 
     # print(toNumbers)
     # print(toNumbers)
@@ -76,7 +80,6 @@ def scan(img):
     combinedDigits = digitfinder.combineDigits(renderedDigits)
 
     combinedDigits = np.float32(combinedDigits)
-
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 

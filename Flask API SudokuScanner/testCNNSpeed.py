@@ -4,10 +4,11 @@ import numpy as np
 from tqdm import tqdm
 import os
 import time
+import numpy as np
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-directory = "cache/Digits/Gaussian/3 3 Gaussian"
-model = keras.models.load_model("model/digitModel.h5")
+directory = "CNNTestData/FONT_HERSHEY_SIMPLEX/"
+model = keras.models.load_model("model/digitModel3.h5")
 
 
 def loadImages():
@@ -26,6 +27,11 @@ def loadImages():
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+        img = np.rint(img / 255).astype(int).reshape(1, 28, 28, 1)
+        result = np.argmax(model.predict(img))
+
+
+
         # cv2.imshow("img", img)
         # cv2.waitKey(0)
         
@@ -42,15 +48,17 @@ def classify():
     global model
     images = loadImages()
 
-    print(len(images))
+    # print(len(images))
 
     # print(images[0].shape)
 
     startTime = current_milli_time()
 
-    for image in images:
-        result = np.argmax(model.predict(image.reshape(1, 28, 28, 1)))
-        # print(result)
+    model.predict(np.vstack(images))
+
+    # for image in images:
+    #     result = np.argmax(model.predict(image.reshape(1, 28, 28, 1)))
+    #     # print(result)
 
     endTime = current_milli_time()
 
@@ -60,4 +68,10 @@ def classify():
 
     print("Time per image classification: " + str(perClassification))
 
-classify()
+# classify()
+
+
+
+import tensorflow as tf
+
+tf.config.list_physical_devices("GPU")

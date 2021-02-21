@@ -4,13 +4,15 @@ from imutils.perspective import four_point_transform
 from skimage.segmentation import clear_border
 import scipy
 import cv2
+import time
 import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 # import tensorflow as tf
 from tensorflow import keras
 
-model = keras.models.load_model("model/digitModel.h5")
+model = keras.models.load_model("model/digitModel3.h5")
 
 def combineBorderAndImg(border, img):
     # Convert border coordinates to image
@@ -36,12 +38,20 @@ def splitByDigits(img):
 
     for j in range(9):
         row = []
-        start = j * interval
+        start = int(j * interval)
         for i in range(9):
-            end = i * interval
-            points = np.array([(end, start), (end, start+interval), (end+interval, start), (end+interval, start+interval)]).reshape(4,2)
-            # print(points)
-            digit = four_point_transform(img, np.rint(points))
+            end = int(i * interval)
+            
+            x1 = end
+            y1 = start
+            x2 = end + int(interval)
+            y2 = start + int(interval)
+
+            # print(y1, y2, x1, x2)
+
+            # TODO move reshaping here
+            digit = img[y1:y2, x1:x2]
+
             row.append(digit)
             # digit = tempRow[start : start + interval]
         digits.append(row)
@@ -59,12 +69,12 @@ def cleanDigits(digits):
             # Document how I adjusted the threshold to make it work for digits
 
             #Different types of filtering
-            # blurred = cv2.GaussianBlur(img, (7,7), 0)
+            blurred = cv2.GaussianBlur(img, (7,7), 0)
             # blurred = cv2.bilateralFilter(img, 9, 75, 75)
 
-            # threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
+            threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
 
-            threshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+            # threshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
             cleaned = clear_border(threshold)
 
@@ -89,6 +99,7 @@ def cleanDigits(digits):
                 continue
             else:
                 cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
+                cleaned = np.rint(cleaned / 255).astype(int)
                 tempRow.append(cleaned)
                 # saveImg("Digits", cleaned)
 
@@ -173,36 +184,80 @@ def renderIndividualDigit(digit, width):
     bg = np.zeros((width, width, 3))
     if digit is not None:
         bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+    
+    # cv2.imshow("bg", bg)
+    # cv2.waitKey(0)
+
     return bg
 
 def classifyDigits(digits):
     # TODO find a faster CNN
+    # Hyperthread this method?
 
     global model
+
+    resizedDigits = []
+
+    for row in digits:
+        for digit in row:
+            if digit is not None:
+                digit = np.uint8(digit)
+                # print(digit.shape)
+                # cv2.imshow("digit", digit*255)
+                # cv2.waitKey(0)
+                digit = cv2.resize(digit, (28,28))
+                digit = digit.reshape(1,28,28,1)
+                resizedDigits.append(digit)
+
+    if len(resizedDigits) > 0:
+        results = model.predict(np.vstack(resizedDigits))
+
+        res = []
+
+        for result in results:
+            res.append(np.argmax(result))
+
+    # print(results)
 
     toNumbers = []
 
     for row in digits:
         tempRow = []
         for digit in row:
-            if digit is None:
-                tempRow.append(None)
-                continue
+            if digit is not None:
+                tempRow.append(res[0])
+                res = res[1:]
             else:
-                digit = cv2.resize(digit, (28,28))
-                # cv2.imshow("resized", digit)
-                # cv2.waitKey(0)
-
-                result = np.argmax(model.predict(digit.reshape(1, 28, 28, 1)))
-                # result = 0
-
-                tempRow.append(result)
-                # print(result)
+                tempRow.append(None)
         toNumbers.append(tempRow)
+
+    # print(toNumbers)
+
+    # for row in digits:
+    #     tempRow = []
+    #     for digit in row:
+    #         if digit is None:
+    #             tempRow.append(None)
+    #             continue
+    #         else:
+    #             digit = cv2.resize(digit, (28,28))
+    #             # cv2.imshow("resized", digit)
+    #             # cv2.waitKey(0)
+
+    #             result = np.argmax(model.predict(digit))
+    #             result = 0
+
+    #             # print("Time per image classification: " + str(timeTaken))
+
+    #             tempRow.append(result)
+    #             # print(result)
+    #     toNumbers.append(tempRow)
 
     return toNumbers
 
-            
+# From https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
+def current_milli_time():
+    return round(time.time() * 1000)
 
 
 def combineDigits(digits):

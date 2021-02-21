@@ -9,7 +9,7 @@ def current_milli_time():
     return round(time.time() * 1000)
 
 # right = cv2.imread("IMG_2489.JPG")
-left = cv2.imread("IMG_2511.JPG")
+left = cv2.imread("IMG_2489.JPG")
 
 directory = "speedTestResults/speeds.csv"
 df = pd.read_csv(directory, index_col=0)
@@ -28,7 +28,7 @@ def doTheScan(img):
 
     print("Time taken: " + str(timeTaken))
 
-    # saveResult(timeTaken)
+    saveResult(timeTaken)
 
 
 def saveResult(timeTaken):
@@ -37,11 +37,11 @@ def saveResult(timeTaken):
 
     row = pd.DataFrame([[timeTaken]], columns=['0'])
 
-    print(row)
+    # print(row)
 
     df = df.append(row, ignore_index=True)
 
-    print(df)
+    # print(df)
 
     # with open("speedTestResults/speeds.csv", a) as file:
     #     file.write()
