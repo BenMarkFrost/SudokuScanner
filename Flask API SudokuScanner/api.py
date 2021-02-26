@@ -7,17 +7,10 @@ import cv2
 from io import BytesIO
 import numpy as np
 
+# TODO Clean up blobs!!
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
-
-# for CORS
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST') # Put any other methods you need here
-    return response
 
 @app.route('/')
 def root():

@@ -8,10 +8,10 @@ import pandas as pd
 def current_milli_time():
     return round(time.time() * 1000)
 
-# right = cv2.imread("IMG_2489.JPG")
+right = cv2.imread("IMG_2511.JPG")
 left = cv2.imread("IMG_2489.JPG")
 
-directory = "speedTestResults/speeds.csv"
+directory = "speedTestResults/imageScanSpeeds.csv"
 df = pd.read_csv(directory, index_col=0)
 
 def doTheScan(img):
@@ -26,7 +26,7 @@ def doTheScan(img):
 
     timeTaken = endTime - startTime
 
-    print("Time taken: " + str(timeTaken))
+    print("Total time taken: " + str(timeTaken))
 
     saveResult(timeTaken)
 
@@ -46,8 +46,12 @@ def saveResult(timeTaken):
     # with open("speedTestResults/speeds.csv", a) as file:
     #     file.write()
 
-doTheScan(left)
-doTheScan(left)
+# doTheScan(left)
+doTheScan(right)
+# doTheScan(right)
+# doTheScan(right)
+# doTheScan(right)
+
 
 
 df = df.astype('int64')

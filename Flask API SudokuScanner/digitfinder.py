@@ -5,6 +5,7 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import time
+import pandas as pd
 import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
@@ -12,19 +13,24 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 # import tensorflow as tf
 from tensorflow import keras
 
-model = keras.models.load_model("model/digitModel3.h5")
+model = keras.models.load_model("model/digitModel6.h5")
+
+directory = "speedTestResults/GPUTimeSpeeds.csv"
+df = pd.read_csv(directory, index_col=0)
+
+# From https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
+def current_milli_time():
+    return round(time.time() * 1000)
 
 def combineBorderAndImg(border, img):
     # Convert border coordinates to image
 
-    border = np.array(border, np.int32)
+    # border = np.array(border, np.int32)
     border = border.reshape((-1,1,2))
 
-    (w,h,d) = img.shape
+    background = np.zeros(img.shape)
 
-    background = np.zeros((w, h, d))
-
-    borderImg = cv2.polylines(background, [border], True, (0,0,255))
+    cv2.polylines(background, [border], True, (0,0,255))
 
     outputImage = cv2.add(np.float32(background), np.float32(img))
     return outputImage
@@ -47,67 +53,63 @@ def splitByDigits(img):
             x2 = end + int(interval)
             y2 = start + int(interval)
 
-            # print(y1, y2, x1, x2)
-
-            # TODO move reshaping here
             digit = img[y1:y2, x1:x2]
+
+
+            digit = cleanDigit(digit)
+
+            
+
+            # cv2.imshow("digit", np.uint8(digit))
+            # cv2.waitKey(0)
 
             row.append(digit)
             # digit = tempRow[start : start + interval]
         digits.append(row)
     return digits
 
-def cleanDigits(digits):
+def cleanDigit(digit):
     
-    cleanedDigits = [[]]
 
-    for row in digits:
+    # Document how I adjusted the threshold to make it work for digits
 
-        tempRow = []
-        for img in row:
+    #Different types of filtering
+    # blurred = cv2.GaussianBlur(digit, (7,7), 0)
+    # blurred = cv2.bilateralFilter(img, 9, 75, 75)
 
-            # Document how I adjusted the threshold to make it work for digits
+    # threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
 
-            #Different types of filtering
-            blurred = cv2.GaussianBlur(img, (7,7), 0)
-            # blurred = cv2.bilateralFilter(img, 9, 75, 75)
+    threshold = cv2.threshold(digit, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
-            threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
+    cleaned = clear_border(threshold)
 
-            # threshold = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    contours = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = imutils.grab_contours(contours)
 
-            cleaned = clear_border(threshold)
+    if len(contours) == 0:
+        return None
 
-            contours = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours = imutils.grab_contours(contours)
+    biggestContour = max(contours, key = cv2.contourArea)
 
-            if len(contours) == 0:
-                tempRow.append(None)
-                continue
+    contourMask = np.zeros(digit.shape, dtype="uint8")
+    cv2.drawContours(contourMask, [biggestContour], -1, 255, -1)
 
-            biggestContour = max(contours, key = cv2.contourArea)
+    numFilled = cv2.countNonZero(contourMask)
+    total = digit.shape[0] * digit.shape[1]
+    percentageFilled = numFilled * 100 / total
 
-            contourMask = np.zeros(img.shape, dtype="uint8")
-            cv2.drawContours(contourMask, [biggestContour], -1, 255, -1)
+    if percentageFilled < 3:
+        return None
+    else:
+        cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
 
-            numFilled = cv2.countNonZero(contourMask)
-            total = img.shape[0] * img.shape[1]
-            percentageFilled = numFilled * 100 / total
+        # saveImg("Digits", cleaned)
 
-            if percentageFilled < 3:
-                tempRow.append(None)
-                continue
-            else:
-                cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
-                cleaned = np.rint(cleaned / 255).astype(int)
-                tempRow.append(cleaned)
-                # saveImg("Digits", cleaned)
+        cleaned = np.rint(cleaned / 255).astype(int)
 
-        cleanedDigits.append(tempRow)
+        return cleaned
     
-    return cleanedDigits
-    
-    # saveImg("Digits", cleaned)
+
 
 def saveImg(folder, img):
     num = 0
@@ -143,23 +145,18 @@ def warp(img, toWarp, border):
 
     (w,h,d) = toWarp.shape
 
-    # print(border)
-
     # Border coordinates are sent in a weird order, reordering
     border = [border[0], border[3], border[1], border[2]]
 
-    # print(border)
-
+    # Fixing warping bug if sudoku is tilted to the left
     if (border[1][1] > border[2][1]):
         border = [border[2], border[0], border[3], border[1]]
-    
-    # print(border)
 
     pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
     pts2 = np.float32(border)
 
-    M = cv2.getPerspectiveTransform(pts1,pts2)
-    dst = cv2.warpPerspective(toWarp,M,(cols,rows))
+    matte = cv2.getPerspectiveTransform(pts1,pts2)
+    dst = cv2.warpPerspective(toWarp,matte,(cols,rows))
 
     # overlay = cv2.add(img, dst)
 
@@ -210,14 +207,30 @@ def classifyDigits(digits):
                 resizedDigits.append(digit)
 
     if len(resizedDigits) > 0:
+
+        # startTime = current_milli_time()
+
+        # print("GPU starting")
+
         results = model.predict(np.vstack(resizedDigits))
+
+        # endTime = current_milli_time()
+
+        # timeTaken = endTime - startTime
+
+        # print("GPU Time taken: " + str(timeTaken))
+
+        # saveResult(timeTaken)
 
         res = []
 
         for result in results:
             res.append(np.argmax(result))
 
-    # print(results)
+        savedDigits = res
+        # for i in resizedDigits:
+        #     res.append(0)
+
 
     toNumbers = []
 
@@ -231,43 +244,30 @@ def classifyDigits(digits):
                 tempRow.append(None)
         toNumbers.append(tempRow)
 
-    # print(toNumbers)
-
-    # for row in digits:
-    #     tempRow = []
-    #     for digit in row:
-    #         if digit is None:
-    #             tempRow.append(None)
-    #             continue
-    #         else:
-    #             digit = cv2.resize(digit, (28,28))
-    #             # cv2.imshow("resized", digit)
-    #             # cv2.waitKey(0)
-
-    #             result = np.argmax(model.predict(digit))
-    #             result = 0
-
-    #             # print("Time per image classification: " + str(timeTaken))
-
-    #             tempRow.append(result)
-    #             # print(result)
-    #     toNumbers.append(tempRow)
-
     return toNumbers
 
-# From https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
-def current_milli_time():
-    return round(time.time() * 1000)
+
+def saveResult(timeTaken):
+
+    global df
+
+    row = pd.DataFrame([[timeTaken]], columns=['0'])
+
+    # print(row)
+
+    df = df.append(row, ignore_index=True)
+
+    df = df.astype('int64')
+    df.to_csv(directory)
 
 
 def combineDigits(digits):
     rows = []
     # concatVert = np.zeros((33,33))
     for row in digits:
-        concatHori = np.concatenate(row, axis=1)
-        rows.append(concatHori)
+        rows.append(np.concatenate(row, axis=1))
 
-    return np.concatenate(rows, axis=0)
+    return np.float32(np.concatenate(rows, axis=0))
 
 def calculateThreshold(img):
 
@@ -303,3 +303,5 @@ def findContours(img):
     # print(cv2.contourArea(biggestContour))
 
     return biggestContour.reshape(4,2)
+
+    

@@ -66,12 +66,12 @@ def classify():
 
     perClassification = round(timeTaken / len(images))
 
-    print("Time per image classification: " + str(perClassification))
+    print("Time per image classification: " + str(timeTaken))
 
-# classify()
+classify()
 
 
 
-import tensorflow as tf
+# import tensorflow as tf
 
-tf.config.list_physical_devices("GPU")
+# tf.config.list_physical_devices("GPU")

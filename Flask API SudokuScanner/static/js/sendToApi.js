@@ -7,6 +7,7 @@ let data = [];
 let latencyParagraph = document.getElementById("latency")
 let best = 1000000;
 let worst = 0;
+let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
 
 //TODO only play frames once API response received
@@ -27,6 +28,8 @@ function displayLatency(id){
 
         frame = frameBuffer[id];
         delete frameBuffer[id];
+
+        tempFrame = urlCreator.revokeObjectURL(tempFrame)
 
         tempFrame = urlCreator.createObjectURL(frame);
 
