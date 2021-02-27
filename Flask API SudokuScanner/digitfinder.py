@@ -241,7 +241,7 @@ def classifyDigits(digits):
                 tempRow.append(res[0])
                 res = res[1:]
             else:
-                tempRow.append(None)
+                tempRow.append(0)
         toNumbers.append(tempRow)
 
     return toNumbers

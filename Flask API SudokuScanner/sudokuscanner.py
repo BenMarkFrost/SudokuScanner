@@ -94,6 +94,9 @@ def scan(img):
 
         solvedSudoku = sudokusolver.solve(toNumbers)
 
+        if solvedSudoku is None:
+            solvedSudoku = np.zeros((9,9))
+
         # returns solved 2d array of digits or None in blank spots
 
         # render digits to images
