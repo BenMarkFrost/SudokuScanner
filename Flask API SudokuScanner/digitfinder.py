@@ -13,7 +13,7 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 # import tensorflow as tf
 from tensorflow import keras
 
-model = keras.models.load_model("model/digitModel6.h5")
+model = keras.models.load_model("model/digitModel8.h5")
 
 directory = "speedTestResults/GPUTimeSpeeds.csv"
 df = pd.read_csv(directory, index_col=0)
@@ -55,10 +55,7 @@ def splitByDigits(img):
 
             digit = img[y1:y2, x1:x2]
 
-
             digit = cleanDigit(digit)
-
-            
 
             # cv2.imshow("digit", np.uint8(digit))
             # cv2.waitKey(0)
@@ -102,7 +99,7 @@ def cleanDigit(digit):
         return None
     else:
         cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
-
+        
         # saveImg("Digits", cleaned)
 
         cleaned = np.rint(cleaned / 255).astype(int)
@@ -163,24 +160,28 @@ def warp(img, toWarp, border):
     return dst
 
 
-def renderDigits(digits, width):
+def renderDigits(digits, width, sudoku):
 
     rendered = []
+    colour = (255, 255, 255)
+
+    if sudoku:
+        colour = (0,255,0)
 
     for row in digits:
         tempRow = []
         for digit in row:
-            bg = renderIndividualDigit(digit, width)
+            bg = renderIndividualDigit(digit, width, colour)
             tempRow.append(bg)
         rendered.append(tempRow)
     
     return rendered
             
 
-def renderIndividualDigit(digit, width):
+def renderIndividualDigit(digit, width, colour):
     bg = np.zeros((width, width, 3))
     if digit is not None:
-        bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+        bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colour, 2)
     
     # cv2.imshow("bg", bg)
     # cv2.waitKey(0)
@@ -194,6 +195,7 @@ def classifyDigits(digits):
     global model
 
     resizedDigits = []
+    res = []
 
     for row in digits:
         for digit in row:
@@ -202,8 +204,8 @@ def classifyDigits(digits):
                 # print(digit.shape)
                 # cv2.imshow("digit", digit*255)
                 # cv2.waitKey(0)
-                digit = cv2.resize(digit, (28,28))
-                digit = digit.reshape(1,28,28,1)
+                digit = cv2.resize(digit, (33,33))
+                digit = digit.reshape(1,33,33,1)
                 resizedDigits.append(digit)
 
     if len(resizedDigits) > 0:
@@ -222,14 +224,14 @@ def classifyDigits(digits):
 
         # saveResult(timeTaken)
 
-        res = []
-
         for result in results:
             res.append(np.argmax(result))
 
-        savedDigits = res
+        # savedDigits = res
         # for i in resizedDigits:
         #     res.append(0)
+
+    # print(res)
 
 
     toNumbers = []

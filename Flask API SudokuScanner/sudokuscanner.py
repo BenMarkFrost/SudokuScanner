@@ -66,6 +66,8 @@ def scan(img):
 
         # saveImg("Rotation", dimg)
 
+        
+
         digits = digitfinder.splitByDigits(dimg)[1:]
 
         # cleanedDigits = digitfinder.cleanDigits(digits)[2:]
@@ -94,8 +96,16 @@ def scan(img):
 
         solvedSudoku = sudokusolver.solve(toNumbers)
 
+        isItSudoku = False
+
+        # print("sending to sudoku")
         if solvedSudoku is None:
-            solvedSudoku = np.zeros((9,9))
+            # print("No sudoku :(")
+            solvedSudoku = toNumbers
+        else:
+            isItSudoku = True
+            # print("sudoku!")
+            # print(np.matrix(solvedSudoku))
 
         # returns solved 2d array of digits or None in blank spots
 
@@ -104,7 +114,7 @@ def scan(img):
 
         (w,h) = dimg.shape
         width = int(h / 9.0)
-        renderedDigits = digitfinder.renderDigits(solvedSudoku, width)
+        renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
 
         # then combine them below
 

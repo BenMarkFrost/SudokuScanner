@@ -6,12 +6,12 @@ import numpy as np
 
 def solve(sudoku):
 
-    print(sudoku)
+    # print(np.matrix(sudoku))
 
     solution = calculateSolution(np.array(sudoku))
 
-    print("Solution: ")
-    print(solution)
+    # print("Solution: ")
+    # print(solution)
 
     return solution
 
