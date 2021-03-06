@@ -7,11 +7,12 @@ import cv2
 import time
 import pandas as pd
 import os
+import math
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 # import tensorflow as tf
-from tensorflow import keras
+import keras
 
 model = keras.models.load_model("model/digitModel8.h5")
 
@@ -39,19 +40,25 @@ def splitByDigits(img):
     digits = [[]]
 
     (w,h) = img.shape
+    # print("Shape: " + str(w) + " " + str(h))
 
     interval = h / 9
 
+    # print(interval)
+
     for j in range(9):
         row = []
-        start = int(j * interval)
+        start = math.ceil(j * interval)
         for i in range(9):
-            end = int(i * interval)
+            end = math.ceil(i * interval)
             
             x1 = end
             y1 = start
-            x2 = end + int(interval)
-            y2 = start + int(interval)
+            x2 = end + math.ceil(interval)
+            y2 = start + math.ceil(interval)
+
+            # print(str(x2))
+            # print(str(y2))
 
             digit = img[y1:y2, x1:x2]
 

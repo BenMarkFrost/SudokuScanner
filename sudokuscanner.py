@@ -30,11 +30,11 @@ savedOutput = object
 
 def scan(img):
 
+    # return np.zeros(img.shape)
+
     global savedOutput, lastClassificationTime
 
     startTime = current_milli_time()
-
-    img = np.array(img)
 
     thresh, gray = digitfinder.calculateThreshold(img)
 
@@ -57,9 +57,12 @@ def scan(img):
 
     # print(timeSinceClassification)
 
-    if (timeSinceClassification) < 1000:
+    if (timeSinceClassification) < 3000:
         combinedDigits = savedOutput
     else:
+
+        # print("Classifying...")
+
         lastClassificationTime = current_milli_time()
 
         dimg = digitfinder.dewarp(gray, border)
@@ -94,7 +97,9 @@ def scan(img):
 
         # sudokusolver
 
-        solvedSudoku = sudokusolver.solve(toNumbers)
+        # solvedSudoku = sudokusolver.solve(toNumbers)
+
+        solvedSudoku = None
 
         isItSudoku = False
 

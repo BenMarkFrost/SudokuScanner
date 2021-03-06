@@ -23,25 +23,14 @@ def frame():
         client_id = request.form.get("id")
         frame = Image.open(request.files['frame'])
 
-        # solutionData = sudokuscanner.scan(frame)
+        frame = np.array(frame)
 
         outputImage = sudokuscanner.scan(frame)
-
-        # outputImage = np.zeros(np.array(frame).shape)
-
-        # result, encoded = cv2.imencode('.jpg', outputImage, [int(cv2.IMWRITE_JPEG_QUALITY), 5])
-
-        # print(outputImage.shape)
-
-        # Pickle compression?
-
-        # print(outputImage)
 
         imgIO = BytesIO()
         pilImg = Image.fromarray((outputImage).astype(np.uint8))
         pilImg.save(imgIO, 'JPEG', quality=50)
         imgIO.seek(0)
-
 
         returnFile = send_file(imgIO, mimetype='img/jpeg')
 

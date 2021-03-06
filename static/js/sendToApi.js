@@ -138,7 +138,7 @@ function upload(frame){
             console.error(xhr);
         }
     };
-    if (!(Object.keys(latencyTracker).length > 200)) {
+    if (!(Object.keys(latencyTracker).length > 20)) {
         xhr.send(formdata);
         console.log("Sending " + client_id);
         latencyTracker[client_id] = Date.now();
