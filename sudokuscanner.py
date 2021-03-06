@@ -97,9 +97,9 @@ def scan(img):
 
         # sudokusolver
 
-        # solvedSudoku = sudokusolver.solve(toNumbers)
+        solvedSudoku = sudokusolver.solve(toNumbers)
 
-        solvedSudoku = None
+        # solvedSudoku = None
 
         isItSudoku = False
 
