@@ -131,8 +131,6 @@ def scan(img):
 
     outputImage = digitfinder.combineBorderAndImg(border, skewedSolution)
 
-    # digitfinder.saveImg("Rendering", outputImage)
-
     endTime = current_milli_time()
 
     timeTaken = endTime - startTime
