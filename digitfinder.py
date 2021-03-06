@@ -178,6 +178,8 @@ def renderDigits(digits, width, sudoku):
     for row in digits:
         tempRow = []
         for digit in row:
+            if digit == 0:
+                digit = ""
             bg = renderIndividualDigit(digit, width, colour)
             tempRow.append(bg)
         rendered.append(tempRow)
