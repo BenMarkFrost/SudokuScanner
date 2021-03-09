@@ -99,6 +99,9 @@ def scan(img):
 
         solvedSudoku = sudokusolver.solve(toNumbers)
 
+        # print(np.matrix(toNumbers))
+        # print(np.matrix(solvedSudoku))
+
         # solvedSudoku = None
 
         isItSudoku = False
@@ -109,6 +112,9 @@ def scan(img):
             solvedSudoku = toNumbers
         else:
             isItSudoku = True
+            solvedSudoku = np.subtract(solvedSudoku, toNumbers)
+            # print(np.matrix(solvedSudoku))
+
             # print("sudoku!")
             # print(np.matrix(solvedSudoku))
 
