@@ -28,7 +28,9 @@ def frame():
 
         frame = np.array(frame)
 
-        outputImage = sudokuscanner.scan(frame, browser_id)
+        # outputImage = sudokuscanner.scan(frame, browser_id)
+
+        outputImage = np.zeros(frame.shape)
 
         imgIO = BytesIO()
         pilImg = Image.fromarray((outputImage).astype(np.uint8))
