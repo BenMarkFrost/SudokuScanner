@@ -20,12 +20,15 @@ def root():
 def frame():
     try:
 
-        client_id = request.form.get("id")
+        frame_id = request.form.get("id")
+        browser_id = request.form.get("browser_id")
         frame = Image.open(request.files['frame'])
+
+        # print(browser_id)
 
         frame = np.array(frame)
 
-        outputImage = sudokuscanner.scan(frame)
+        outputImage = sudokuscanner.scan(frame, browser_id)
 
         imgIO = BytesIO()
         pilImg = Image.fromarray((outputImage).astype(np.uint8))
@@ -34,7 +37,7 @@ def frame():
 
         returnFile = send_file(imgIO, mimetype='img/jpeg')
 
-        returnFile.headers["x-filename"] = client_id
+        returnFile.headers["x-filename"] = frame_id
 
         # return {"id": client_id, "img": encoded.tolist()}
 

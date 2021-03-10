@@ -1,5 +1,5 @@
 
-let client_id = 0;
+let frame_id = 0;
 let frameBuffer = {};
 let latencyTracker = {};
 let rollingAverageTracker = [];
@@ -9,6 +9,7 @@ let best = 1000000;
 let worst = 0;
 let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
+let browwser_id = Math.floor(Math.random() * 10000);
 
 //TODO only play frames once API response received
 
@@ -71,10 +72,11 @@ function displayLatency(id){
 
 function upload(frame){
 
-    client_id = client_id + 1;
+    frame_id = frame_id + 1;
     let formdata = new FormData();
     formdata.append("frame", frame);
-    formdata.append("id", client_id)
+    formdata.append("id", frame_id);
+    formdata.append("browser_id", browwser_id);
     
     let xhr = new XMLHttpRequest();
     xhr.open('POST', window.location.origin + '/frame', true);
@@ -140,9 +142,9 @@ function upload(frame){
     };
     if (!(Object.keys(latencyTracker).length > 20)) {
         xhr.send(formdata);
-        console.log("Sending " + client_id);
-        latencyTracker[client_id] = Date.now();
-        frameBuffer[client_id] = frame;
+        console.log("Sending " + frame_id);
+        latencyTracker[frame_id] = Date.now();
+        frameBuffer[frame_id] = frame;
 
     } else {
         console.error("Waiting on more than 200 frames...")

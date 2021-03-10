@@ -21,18 +21,16 @@ df = pd.read_csv(directory, index_col=0)
 def current_milli_time():
     return round(time.time() * 1000)
 
-lastClassificationTime = 1000
-savedOutput = object
+clientsDict = {}
 
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
+def scan(img, browser_id):
 
-def scan(img):
-
-    # return np.zeros(img.shape)
-
-    global savedOutput, lastClassificationTime
+    # print(browser_id)
+    # cv2.imshow("img", img)
+    # cv2.waitKey(0)
 
     startTime = current_milli_time()
 
@@ -47,91 +45,8 @@ def scan(img):
 
     if border is None:
         return np.zeros(img.shape)
-        # cv2.drawContours(img, [border], -1, (0, 255, 0), 2)
-        # cv2.imshow("Bordered", img)
-        # cv2.waitKey(0)
 
-    # if (count != 0) and (count % 100 != 0):
-
-    timeSinceClassification = current_milli_time() - lastClassificationTime
-
-    # print(timeSinceClassification)
-
-    if (timeSinceClassification) < 3000:
-        combinedDigits = savedOutput
-    else:
-
-        # print("Classifying...")
-
-        lastClassificationTime = current_milli_time()
-
-        dimg = digitfinder.dewarp(gray, border)
-
-        # saveImg("Rotation", dimg)
-
-        
-
-        digits = digitfinder.splitByDigits(dimg)[1:]
-
-        # cleanedDigits = digitfinder.cleanDigits(digits)[2:]
-
-        # print("getting here")
-
-        # for i in cleanedDigits:
-        #     for digit in i:
-        #         cv2.imshow("output", digit)
-        #         cv2.waitKey(0)
-
-        # print(cleanedDigits)
-
-        # TODO
-        # CNN for number recognition
-
-        toNumbers = digitfinder.classifyDigits(digits)
-
-        # print(len(toNumbers))
-
-        # print(toNumbers)
-        # print(toNumbers)
-        # returns a 2d array of digits or None in blank spots
-
-        # sudokusolver
-
-        solvedSudoku = sudokusolver.solve(toNumbers)
-
-        # print(np.matrix(toNumbers))
-        # print(np.matrix(solvedSudoku))
-
-        # solvedSudoku = None
-
-        isItSudoku = False
-
-        # print("sending to sudoku")
-        if solvedSudoku is None:
-            # print("No sudoku :(")
-            solvedSudoku = toNumbers
-        else:
-            isItSudoku = True
-            solvedSudoku = np.subtract(solvedSudoku, toNumbers)
-            # print(np.matrix(solvedSudoku))
-
-            # print("sudoku!")
-            # print(np.matrix(solvedSudoku))
-
-        # returns solved 2d array of digits or None in blank spots
-
-        # render digits to images
-        # returns 2d array of digit images
-
-        (w,h) = dimg.shape
-        width = int(h / 9.0)
-        renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
-
-        # then combine them below
-
-        combinedDigits = digitfinder.combineDigits(renderedDigits)
-
-        savedOutput = combinedDigits
+    combinedDigits = manageClients(gray, border, browser_id)
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 
@@ -144,6 +59,55 @@ def scan(img):
     # saveResult(timeTaken)
 
     return outputImage
+
+
+def manageClients(gray, border, browser_id):
+    global clientsDict
+
+    if browser_id not in clientsDict:
+        combinedDigits = findSudoku(gray, border)
+        clientsDict[browser_id] = (current_milli_time(), combinedDigits)
+        print("New client: " + str(browser_id))
+    else:
+        lastClassificationTime, savedOutput = clientsDict[browser_id]
+        timeSinceClassification = current_milli_time() - lastClassificationTime
+
+        if (timeSinceClassification) < 3000:
+            combinedDigits = savedOutput
+        else:
+            combinedDigits = findSudoku(gray, border)
+            clientsDict[browser_id] = (current_milli_time(), combinedDigits)
+    
+    return combinedDigits
+
+
+def findSudoku(gray, border):
+    
+    dimg = digitfinder.dewarp(gray, border)
+
+    digits = digitfinder.splitByDigits(dimg)[1:]
+
+    toNumbers = digitfinder.classifyDigits(digits)
+
+    solvedSudoku = sudokusolver.solve(toNumbers)
+
+    isItSudoku = False
+
+    # print("sending to sudoku")
+    if solvedSudoku is None:
+        # print("No sudoku :(")
+        solvedSudoku = toNumbers
+    else:
+        isItSudoku = True
+        solvedSudoku = np.subtract(solvedSudoku, toNumbers)
+
+    (w,h) = dimg.shape
+    width = int(h / 9.0)
+    renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
+
+    combinedDigits = digitfinder.combineDigits(renderedDigits)
+
+    return combinedDigits
 
 
 def saveResult(timeTaken):
@@ -163,4 +127,4 @@ def saveResult(timeTaken):
 
 
 left = cv2.imread("IMG_2511.JPG")
-scan(imutils.resize(left, 640))
+scan(imutils.resize(left, 640), 1)

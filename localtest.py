@@ -15,7 +15,7 @@ def runApp():
 
         startTime = current_milli_time()
 
-        response = sudokuscanner.scan(frame)
+        response = sudokuscanner.scan(frame, 2)
 
         endTime = current_milli_time()
 
