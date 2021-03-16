@@ -103,11 +103,11 @@ def findSudoku(gray, border):
 
     # print(np.matrix(toNumbers))
 
-    # solvedSudoku = sudokusolver.solve(toNumbers)
+    solvedSudoku = sudokusolver.solve(toNumbers)
 
     # print(np.matrix(solvedSudoku))
 
-    solvedSudoku = None
+    # solvedSudoku = Nones
 
     isItSudoku = False
 
