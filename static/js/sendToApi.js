@@ -4,12 +4,13 @@ let frameBuffer = {};
 let latencyTracker = {};
 let rollingAverageTracker = [];
 let data = [];
-let latencyParagraph = document.getElementById("latency")
+let latencyParagraph = document.getElementById("latency");
 let best = 1000000;
 let worst = 0;
 let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
 let browwser_id = Math.floor(Math.random() * 10000);
+let synced = true;
 
 //TODO only play frames once API response received
 
@@ -34,7 +35,9 @@ function displayLatency(id){
 
         tempFrame = urlCreator.createObjectURL(frame);
 
-        document.querySelector("#video").src = tempFrame;
+        if (synced){
+            document.querySelector("#video").src = tempFrame;
+        }
 
         // data.push(tempFrame);
 
@@ -72,6 +75,13 @@ function displayLatency(id){
 
 function upload(frame){
 
+    // document.querySelector("#video").src = frame;
+
+    if (!synced){
+        tempFrame = urlCreator.createObjectURL(frame);
+        document.querySelector("#video").src = tempFrame;
+    }
+
     frame_id = frame_id + 1;
     let formdata = new FormData();
     formdata.append("frame", frame);
@@ -96,6 +106,8 @@ function upload(frame){
             // console.log(this.response)
             
             displayLatency(xhr.getResponseHeader("x-filename"))
+
+            data.push(solutionImg)
 
             // console.log(xhr.getResponseHeader("x-filename"))
 
@@ -140,6 +152,7 @@ function upload(frame){
             console.error(xhr);
         }
     };
+    
     if (!(Object.keys(latencyTracker).length > 20)) {
         xhr.send(formdata);
         console.log("Sending " + frame_id);
@@ -157,10 +170,21 @@ function toAPI(canvas){
 
     // TODO add toggle button for frame sync
 
-    data = [];
+    // console.log("Found me");
+
+    data = []
 
     canvas.toBlob(upload, 'image/jpeg');
 
-    return data;
+    console.log(data);
+
+}
+
+function toggleFrameSync(sw){
+
+    console.log("Frame sync: " + sw.checked);
+
+    synced = sw.checked;
+
 
 }

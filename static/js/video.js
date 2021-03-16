@@ -34,8 +34,10 @@ async function runWebcamCapture() {
                 // Drawing Original Video
                 ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
                 ctx.drawImage(video, 0,0,video.width,video.height);
-                
+            
                 let data = toAPI(canvas);
+
+                console.log(data);
 
                 video.requestVideoFrameCallback(() => {
                     processFrame();
@@ -51,4 +53,12 @@ async function runWebcamCapture() {
         });
 }
 
-setTimeout(runWebcamCapture, 1000);
+window.addEventListener('load', function () {
+    console.log("Loaded");
+    runWebcamCapture();
+    // setTimeout(runWebcamCapture, 3000);
+})
+
+
+
+

@@ -31,6 +31,8 @@ def runApp():
 
         output = cv2.add(frame, response)
 
+        # digitfinder.saveImg("steps", )
+
         operationTime = endTime - startTime
 
         cv2.rectangle(output, (0,0), (200, 30), (255,255,255), -1)

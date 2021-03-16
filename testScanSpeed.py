@@ -20,7 +20,7 @@ def doTheScan(img):
 
     print("starting")
 
-    sudokuscanner.scan(imutils.resize(img, 640))
+    sudokuscanner.scan(imutils.resize(img, 640), 1)
 
     endTime = current_milli_time()
 
@@ -28,7 +28,7 @@ def doTheScan(img):
 
     print("Total time taken: " + str(timeTaken))
 
-    saveResult(timeTaken)
+    # saveResult(timeTaken)
 
 
 def saveResult(timeTaken):
@@ -46,7 +46,7 @@ def saveResult(timeTaken):
     # with open("speedTestResults/speeds.csv", a) as file:
     #     file.write()
 
-# doTheScan(left)
+doTheScan(left)
 doTheScan(right)
 # doTheScan(right)
 # doTheScan(right)

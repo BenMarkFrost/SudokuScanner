@@ -127,6 +127,7 @@ def saveImg(folder, img):
             break
 
     cv2.imwrite(directory + folder + "/" + folder + str(num) + ".jpg", img)
+    print("writing to " + str(directory + folder + "/" + folder + str(num) + ".jpg"))
     num = num + 1
 
 def dewarp(img, border):

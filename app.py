@@ -10,7 +10,7 @@ import numpy as np
 # TODO Clean up blobs!!
 
 app = Flask(__name__)
-# app.config["DEBUG"] = True
+app.config["DEBUG"] = True
 
 @app.route('/')
 def root():
@@ -48,4 +48,4 @@ def frame():
         return e
 
 
-app.run(host='0.0.0.0', threaded=True)
+app.run(threaded=True)

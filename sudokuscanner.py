@@ -34,7 +34,13 @@ def scan(img, browser_id):
 
     startTime = current_milli_time()
 
+    # digitfinder.saveImg("steps", img)
+
     thresh, gray = digitfinder.calculateThreshold(img)
+
+    # digitfinder.saveImg("steps", gray)
+
+    # digitfinder.saveImg("steps", thresh)
 
     border = None
 
@@ -50,7 +56,11 @@ def scan(img, browser_id):
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 
+    # digitfinder.saveImg("steps", skewedSolution)
+
     outputImage = digitfinder.combineBorderAndImg(border, skewedSolution)
+
+    # digitfinder.saveImg("steps", outputImage)
 
     endTime = current_milli_time()
 
@@ -85,11 +95,19 @@ def findSudoku(gray, border):
     
     dimg = digitfinder.dewarp(gray, border)
 
+    # digitfinder.saveImg("steps", dimg)
+
     digits = digitfinder.splitByDigits(dimg)[1:]
 
     toNumbers = digitfinder.classifyDigits(digits)
 
+    # print(np.matrix(toNumbers))
+
     solvedSudoku = sudokusolver.solve(toNumbers)
+
+    # print(np.matrix(solvedSudoku))
+
+    # solvedSudoku = None
 
     isItSudoku = False
 
@@ -101,11 +119,14 @@ def findSudoku(gray, border):
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 
+    # print(np.matrix(solvedSudoku))
+
     (w,h) = dimg.shape
     width = int(h / 9.0)
     renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
 
     combinedDigits = digitfinder.combineDigits(renderedDigits)
+    # digitfinder.saveImg("steps", combinedDigits)
 
     return combinedDigits
 
