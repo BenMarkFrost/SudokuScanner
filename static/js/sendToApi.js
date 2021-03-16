@@ -176,7 +176,7 @@ function toAPI(canvas){
 
     canvas.toBlob(upload, 'image/jpeg');
 
-    console.log(data);
+    // console.log(data);
 
 }
 

@@ -35,9 +35,9 @@ async function runWebcamCapture() {
                 ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
                 ctx.drawImage(video, 0,0,video.width,video.height);
             
-                let data = toAPI(canvas);
+                toAPI(canvas);
 
-                console.log(data);
+                // console.log(data);
 
                 video.requestVideoFrameCallback(() => {
                     processFrame();
