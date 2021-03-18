@@ -46,7 +46,7 @@ def saveResult(timeTaken):
     # with open("speedTestResults/speeds.csv", a) as file:
     #     file.write()
 
-doTheScan(left)
+# doTheScan(left)
 doTheScan(right)
 # doTheScan(right)
 # doTheScan(right)

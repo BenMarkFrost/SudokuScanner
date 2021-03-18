@@ -103,6 +103,12 @@ def findSudoku(gray, border):
 
     # print(np.matrix(toNumbers))
 
+    for j in range(len(digits)):
+        row = digits[j]
+        for i in range(len(row)):
+            if row[i] is not None:
+                digitfinder.saveImg("IMG_2511", row[i]*255, toNumbers[j][i])
+
     solvedSudoku = sudokusolver.solve(toNumbers)
 
     # print(np.matrix(solvedSudoku))

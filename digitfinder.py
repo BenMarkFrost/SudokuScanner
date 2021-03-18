@@ -8,13 +8,14 @@ import time
 import pandas as pd
 import os
 import math
+from pathlib import Path
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 # import tensorflow as tf
 import keras
 
-model = keras.models.load_model("model/digitModel8.h5")
+model = keras.models.load_model("model/digitModel10.h5")
 
 directory = "speedTestResults/GPUTimeSpeeds.csv"
 df = pd.read_csv(directory, index_col=0)
@@ -67,6 +68,9 @@ def splitByDigits(img):
             # cv2.imshow("digit", np.uint8(digit))
             # cv2.waitKey(0)
 
+            # if digit is not None:
+            #     saveImg("IMG_2511", (digit*255))
+
             row.append(digit)
             # digit = tempRow[start : start + interval]
         digits.append(row)
@@ -115,19 +119,31 @@ def cleanDigit(digit):
     
 
 
-def saveImg(folder, img):
-    num = 0
+def saveImg(folder, img, fileName):
     directory = "cache/"
-    while True:
-        try:
-            f = open(directory + folder + "/" + folder + str(num) + ".jpg", 'r')
-            f.close()
-            num = num + 1
-        except:
-            break
+    num = 0
 
-    cv2.imwrite(directory + folder + "/" + folder + str(num) + ".jpg", img)
-    print("writing to " + str(directory + folder + "/" + folder + str(num) + ".jpg"))
+    generatedPath = ""
+
+    if fileName is None:
+        while True:
+            generatedPath = directory + folder + "/" + folder + str(num) + ".jpg"
+            myFile = Path(generatedPath)
+            if myFile.is_file():
+                num = num + 1
+            else:
+                break
+    else: 
+        while True:
+            generatedPath = directory + folder + "/" + folder + str(fileName) + str(num) + ".jpg"
+            myFile = Path(generatedPath)
+            if myFile.is_file():
+                num = num + 1
+            else:
+                break
+
+    cv2.imwrite(generatedPath, img)
+    print("writing to " + generatedPath)
     num = num + 1
 
 def dewarp(img, border):
