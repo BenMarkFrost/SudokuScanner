@@ -8,9 +8,14 @@
     ],
     "rewrites": [
       {
+        "source": "/",
+        "destination": "public/templates/index.html"},
+        {
         "source": "**",
-        "destination": "/index.html"
-      }
+          "run": {
+          "serviceId": "sudokuapp"
+          }
+        }
     ]
   }
 }
