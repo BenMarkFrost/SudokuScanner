@@ -7,13 +7,11 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/",
-        "destination": "public/templates/index.html"},
         {
         "source": "**",
           "run": {
-          "serviceId": "sudokuapp"
+          "serviceId": "sudokuapp",
+          "region": "europe-west1"
           }
         }
     ]
