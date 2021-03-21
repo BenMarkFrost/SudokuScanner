@@ -5,15 +5,15 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import os
-import digitfinder
+from server import digitfinder
 from io import BytesIO
 from PIL import Image
 import time
 import pandas as pd
-import sudokusolver
+from server import sudokusolver
 
-directory = "speedTestResults/videoScanSpeeds.csv"
-df = pd.read_csv(directory, index_col=0)
+# directory = "server/speedTestResults/videoScanSpeeds.csv"
+# df = pd.read_csv(directory, index_col=0)
 
 # count = 0
 
@@ -137,18 +137,18 @@ def findSudoku(gray, border):
     return combinedDigits
 
 
-def saveResult(timeTaken):
+# def saveResult(timeTaken):
 
-    global df
+#     global df
 
-    row = pd.DataFrame([[timeTaken]], columns=['0'])
+#     row = pd.DataFrame([[timeTaken]], columns=['0'])
 
-    # print(row)
+#     # print(row)
 
-    df = df.append(row, ignore_index=True)
+#     df = df.append(row, ignore_index=True)
 
-    df = df.astype('int64')
-    df.to_csv(directory)
+#     df = df.astype('int64')
+#     df.to_csv(directory)
 
 
 

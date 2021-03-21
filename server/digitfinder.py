@@ -17,8 +17,8 @@ import keras
 
 model = keras.models.load_model("model/digitModel10.h5")
 
-directory = "speedTestResults/GPUTimeSpeeds.csv"
-df = pd.read_csv(directory, index_col=0)
+# directory = "server/speedTestResults/GPUTimeSpeeds.csv"
+# df = pd.read_csv(directory, index_col=0)
 
 # From https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
 def current_milli_time():
@@ -275,18 +275,18 @@ def classifyDigits(digits):
     return toNumbers
 
 
-def saveResult(timeTaken):
+# def saveResult(timeTaken):
 
-    global df
+#     global df
 
-    row = pd.DataFrame([[timeTaken]], columns=['0'])
+#     row = pd.DataFrame([[timeTaken]], columns=['0'])
 
-    # print(row)
+#     # print(row)
 
-    df = df.append(row, ignore_index=True)
+#     df = df.append(row, ignore_index=True)
 
-    df = df.astype('int64')
-    df.to_csv(directory)
+#     df = df.astype('int64')
+#     df.to_csv(directory)
 
 
 def combineDigits(digits):

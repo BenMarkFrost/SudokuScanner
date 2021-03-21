@@ -1,6 +1,6 @@
 import cv2
 import time
-import sudokuscanner
+from server import sudokuscanner
 import imutils
 import pandas as pd
 
@@ -11,7 +11,7 @@ def current_milli_time():
 right = cv2.imread("IMG_2511.JPG")
 left = cv2.imread("IMG_2489.JPG")
 
-directory = "speedTestResults/imageScanSpeeds.csv"
+directory = "server/speedTestResults/imageScanSpeeds.csv"
 df = pd.read_csv(directory, index_col=0)
 
 def doTheScan(img):

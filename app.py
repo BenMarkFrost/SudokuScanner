@@ -1,7 +1,7 @@
 from flask import Flask, request, Response, render_template, send_file
 from PIL import Image
 import time
-import sudokuscanner
+from server import sudokuscanner
 import codecs, json
 import cv2
 from io import BytesIO
