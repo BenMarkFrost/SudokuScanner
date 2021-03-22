@@ -1,5 +1,4 @@
 from flask import Flask, request, Response, render_template, send_file
-from flask_cors import CORS, cross_origin
 from PIL import Image
 import time
 from server import sudokuscanner
@@ -15,9 +14,6 @@ app = Flask(__name__,
             static_folder='public',
             template_folder='public/templates')
 
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-
 # app.config["DEBUG"] = True
 
 @app.route('/')
@@ -25,7 +21,6 @@ def root():
     return render_template("index.html")
 
 @app.route('/frame', methods=['POST'])
-@cross_origin()
 def frame():
     try:
 
