@@ -7,17 +7,17 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-        {
-        "source": "/frame",
-          "run": {
-          "serviceId": "sudokuapp",
-          "region": "europe-west1"
-          }
-        }, 
-        {
-          "source": "**", 
-          "destination": "templates/index.html"
+      {
+      "source": "**",
+      "destination":"/templates/index.html"
+      },
+      {
+      "source": "/frame",
+        "run": {
+        "serviceId": "sudokuapp",
+        "region": "europe-west1"
         }
+      }
     ]
   }
 }
