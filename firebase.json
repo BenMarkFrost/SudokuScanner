@@ -8,11 +8,11 @@
     ],
     "rewrites": [
       {
-      "source": "**",
+      "source": "/",
       "destination":"/templates/index.html"
       },
       {
-      "source": "/frame",
+      "source": "**",
         "run": {
         "serviceId": "sudokuapp",
         "region": "europe-west1"
