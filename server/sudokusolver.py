@@ -1,9 +1,11 @@
 import numpy as np
+from memoization import cached
+
 
 # Make this object oriented?
 # Everything needs to be local due to concurrency
 
-
+@cached
 def solve(sudoku):
 
     # print(np.matrix(sudoku))
