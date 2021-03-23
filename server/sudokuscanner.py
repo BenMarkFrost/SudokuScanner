@@ -5,12 +5,12 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import os
-from server import digitfinder
+import digitfinder
+import sudokusolver
 from io import BytesIO
 from PIL import Image
 import time
 import pandas as pd
-from server import sudokusolver
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
 # df = pd.read_csv(directory, index_col=0)
@@ -75,18 +75,20 @@ def manageClients(gray, border, browser_id):
     global clientsDict
 
     if browser_id not in clientsDict:
-        combinedDigits = findSudoku(gray, border)
-        clientsDict[browser_id] = (current_milli_time(), combinedDigits)
+        combinedDigits, solved = findSudoku(gray, border)
+        clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
         print("New client: " + str(browser_id))
     else:
-        lastClassificationTime, savedOutput = clientsDict[browser_id]
+        lastClassificationTime, savedOutput, solved = clientsDict[browser_id]
         timeSinceClassification = current_milli_time() - lastClassificationTime
 
-        if (timeSinceClassification) < 3000:
+        if timeSinceClassification < 500:
+            combinedDigits = savedOutput
+        elif (timeSinceClassification < 3000) and (solved == True):
             combinedDigits = savedOutput
         else:
-            combinedDigits = findSudoku(gray, border)
-            clientsDict[browser_id] = (current_milli_time(), combinedDigits)
+            combinedDigits, solved = findSudoku(gray, border)
+            clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
     
     return combinedDigits
 
@@ -122,6 +124,7 @@ def findSudoku(gray, border):
         # print("No sudoku :(")
         solvedSudoku = toNumbers
     else:
+        print(sudokusolver.solve.cache_info())
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 
@@ -134,7 +137,7 @@ def findSudoku(gray, border):
     combinedDigits = digitfinder.combineDigits(renderedDigits)
     # digitfinder.saveImg("steps", combinedDigits)
 
-    return combinedDigits
+    return combinedDigits, isItSudoku
 
 
 # def saveResult(timeTaken):

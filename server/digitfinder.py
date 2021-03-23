@@ -240,7 +240,13 @@ def classifyDigits(digits):
 
         # print("GPU starting")
 
-        results = model.predict(np.vstack(resizedDigits))
+        # results = model.predict(np.vstack(resizedDigits))
+
+        resizedDigits = np.array(resizedDigits)
+        resizedDigits = resizedDigits.reshape(resizedDigits.shape[0], 33, 33, 1)
+
+        results = model.predict_on_batch(resizedDigits)
+        # print(results)
 
         # endTime = current_milli_time()
 
