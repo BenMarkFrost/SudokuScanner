@@ -5,12 +5,13 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import os
-import digitfinder
-import sudokusolver
+from server import digitfinder
+from server import sudokusolver
 from io import BytesIO
 from PIL import Image
 import time
 import pandas as pd
+
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
 # df = pd.read_csv(directory, index_col=0)
@@ -124,7 +125,7 @@ def findSudoku(gray, border):
         # print("No sudoku :(")
         solvedSudoku = toNumbers
     else:
-        print(sudokusolver.solve.cache_info())
+        # print(sudokusolver.solve.cache_info())
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 

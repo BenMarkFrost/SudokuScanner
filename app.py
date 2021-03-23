@@ -1,3 +1,4 @@
+# sys.path.insert(1, '/server')
 from flask import Flask, request, Response, render_template, send_file
 from PIL import Image
 import time
@@ -6,6 +7,9 @@ import codecs, json
 import cv2
 from io import BytesIO
 import numpy as np
+import sys
+sys.path.append('../')
+
 
 # TODO Clean up blobs!!
 

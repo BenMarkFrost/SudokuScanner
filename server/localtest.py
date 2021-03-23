@@ -1,9 +1,9 @@
+# import sys
+# sys.path.append('../')
 import cv2
-import sudokuscanner
+from server import sudokuscanner
 import time
 import numpy as np
-import sys
-sys.path.append('../')
 
 camera = cv2.VideoCapture(0)
 
