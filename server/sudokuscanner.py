@@ -7,6 +7,7 @@ import cv2
 import os
 from server import digitfinder
 from server import sudokusolver
+from server.Client import Client
 from io import BytesIO
 from PIL import Image
 import time
@@ -27,21 +28,11 @@ clientsDict = {}
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
-def scan(img, browser_id):
-
-    # print(browser_id)
-    # cv2.imshow("img", img)
-    # cv2.waitKey(0)
+def scan(img, browser_id, frame_id):
 
     startTime = current_milli_time()
 
-    # digitfinder.saveImg("steps", img)
-
     thresh, gray = digitfinder.calculateThreshold(img)
-
-    # digitfinder.saveImg("steps", gray)
-
-    # digitfinder.saveImg("steps", thresh)
 
     border = None
 
@@ -51,47 +42,85 @@ def scan(img, browser_id):
         pass
 
     if border is None:
-        return np.zeros(img.shape)
+        return np.zeros(img.shape), False
 
-    combinedDigits = manageClients(gray, border, browser_id)
+    combinedDigits, calculating = manageClients(gray, border, browser_id, frame_id)
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 
-    # digitfinder.saveImg("steps", skewedSolution)
-
     outputImage = digitfinder.combineBorderAndImg(border, skewedSolution)
-
-    # digitfinder.saveImg("steps", outputImage)
 
     endTime = current_milli_time()
 
     timeTaken = endTime - startTime
 
-    # saveResult(timeTaken)
+    return outputImage, calculating
+    # return 1, 2
 
-    return outputImage
 
+def manageClients(gray, border, browser_id, frame_id):
 
-def manageClients(gray, border, browser_id):
     global clientsDict
+    calculating = False
+
+    # print("ClientsDict: " + str(clientsDict.keys()))
 
     if browser_id not in clientsDict:
-        combinedDigits, solved = findSudoku(gray, border)
-        clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
+
+        client = Client(browser_id)
+
+        calculating = True
+
+        # client.putFrame(frame_id, findSudoku(gray, border))
+
+        client.registerFrame(frame_id)
+        combinedDigits, client.solved = findSudoku(gray, border)
+        client.savedOutput = combinedDigits
+        
+
+        # combinedDigits, solved = findSudoku(gray, border)
+        # clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
+
         print("New client: " + str(browser_id))
+
     else:
-        lastClassificationTime, savedOutput, solved = clientsDict[browser_id]
-        timeSinceClassification = current_milli_time() - lastClassificationTime
+        # lastClassificationTime, savedOutput, solved = clientsDict[browser_id]
+        client = clientsDict[browser_id]
+        
+        timeSinceClassification = current_milli_time() - client.lastClassificationTime
 
         if timeSinceClassification < 500:
-            combinedDigits = savedOutput
-        elif (timeSinceClassification < 3000) and (solved == True):
-            combinedDigits = savedOutput
+            return client.savedOutput, False
+        elif (timeSinceClassification < 3000) and (client.solved == True):
+            return client.savedOutput, False
         else:
-            combinedDigits, solved = findSudoku(gray, border)
-            clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
+            calculating = True
+
+            client.registerFrame(frame_id)
+            newCombinedDigits, solved = findSudoku(gray, border)
+
+            if (solved):
+                combinedDigits = newCombinedDigits
+                client.savedOutput = combinedDigits
+                client.solved = True
+            else:
+                combinedDigits = client.savedOutput
+
+            
+
+    for i in range(5):
+        if client.isNext(frame_id):
+            break
+        print("WAITING, I'm: ", frame_id)
+        time.sleep(0.05)
+        if i == 5:
+            print("Gave up waiting ", frame_id, browser_id)
+
+    client.deregisterFrame(frame_id)
+    client.lastClassificationTime = current_milli_time()
+    clientsDict[browser_id] = client
     
-    return combinedDigits
+    return combinedDigits, calculating
 
 
 def findSudoku(gray, border):
@@ -158,4 +187,4 @@ def findSudoku(gray, border):
 
 
 left = cv2.imread("IMG_2511.JPG")
-scan(imutils.resize(left, 640), 1)
+scan(imutils.resize(left, 640), 1, 1)

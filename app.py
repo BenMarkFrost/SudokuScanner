@@ -36,7 +36,9 @@ def frame():
 
         frame = np.array(frame)
 
-        outputImage = sudokuscanner.scan(frame, browser_id)
+        outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+
+        # outputImage = np.zeros(frame.shape)
 
         imgIO = BytesIO()
         pilImg = Image.fromarray((outputImage).astype(np.uint8))
@@ -46,8 +48,6 @@ def frame():
         returnFile = send_file(imgIO, mimetype='img/jpeg')
 
         returnFile.headers["x-filename"] = frame_id
-
-        # return {"id": client_id, "img": encoded.tolist()}
 
         return returnFile
 

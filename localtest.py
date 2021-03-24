@@ -1,9 +1,12 @@
-# import sys
-# sys.path.append('../')
 import cv2
-from server import sudokuscanner
+import sys
+# sys.path.append('../')
+# sys.path.insert(1, '../')
+# from server import sudokuscanner
+import recordSpeed
 import time
 import numpy as np
+
 
 camera = cv2.VideoCapture(0)
 
@@ -11,13 +14,16 @@ def runApp():
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            recordSpeed.finish()
             break
 
         ret, frame = camera.read()
 
         startTime = current_milli_time()
 
-        response = sudokuscanner.scan(frame, 2)
+        # response = sudokuscanner.scan(frame, 2)
+
+        response = recordSpeed.doTheScan(frame)
 
         endTime = current_milli_time()
 
@@ -25,15 +31,7 @@ def runApp():
 
         response = np.uint8(response)
 
-        # for row in frame:
-        #     print(row)
-
-        # for row in response:
-        #     print(row)
-
         output = cv2.add(frame, response)
-
-        # digitfinder.saveImg("steps", )
 
         operationTime = endTime - startTime
 
@@ -43,10 +41,6 @@ def runApp():
 
         cv2.imshow("output", output)
 
-
-        # cv2.imshow("response", response)
-
-        # cv2.imshow("frame", frame)
 
     camera.release()
     cv2.destroyAllWindows()
