@@ -55,58 +55,48 @@ def scan(img, browser_id, frame_id):
     timeTaken = endTime - startTime
 
     return outputImage, calculating
-    # return 1, 2
 
 
 def manageClients(gray, border, browser_id, frame_id):
 
     global clientsDict
-    calculating = False
-
-    # print("ClientsDict: " + str(clientsDict.keys()))
 
     if browser_id not in clientsDict:
 
         client = Client(browser_id)
 
-        calculating = True
-
-        # client.putFrame(frame_id, findSudoku(gray, border))
-
-        client.registerFrame(frame_id)
-        combinedDigits, client.solved = findSudoku(gray, border)
-        client.savedOutput = combinedDigits
-        
-
-        # combinedDigits, solved = findSudoku(gray, border)
-        # clientsDict[browser_id] = (current_milli_time(), combinedDigits, solved)
+        client = cacheClient(client, frame_id, gray, border)
 
         print("New client: " + str(browser_id))
 
     else:
-        # lastClassificationTime, savedOutput, solved = clientsDict[browser_id]
         client = clientsDict[browser_id]
         
         timeSinceClassification = current_milli_time() - client.lastClassificationTime
 
         if timeSinceClassification < 500:
             return client.savedOutput, False
-        elif (timeSinceClassification < 3000) and (client.solved == True):
+
+        elif timeSinceClassification < 3000 and client.solved == True:
             return client.savedOutput, False
+
         else:
-            calculating = True
+            client = cacheClient(client, frame_id, gray, border)
 
-            client.registerFrame(frame_id)
-            newCombinedDigits, solved = findSudoku(gray, border)
+    clientsDict[browser_id] = client
 
-            if (solved):
-                combinedDigits = newCombinedDigits
-                client.savedOutput = combinedDigits
-                client.solved = True
-            else:
-                combinedDigits = client.savedOutput
+    print("true")
+    
+    return client.savedOutput, True
 
-            
+
+def cacheClient(client, frame_id, gray, border):
+
+    client.registerFrame(frame_id)
+    combinedDigits, client.solved = findSudoku(gray, border)
+
+    if client.solved or client.savedOutput is None:
+        client.savedOutput = combinedDigits
 
     for i in range(5):
         if client.isNext(frame_id):
@@ -114,58 +104,39 @@ def manageClients(gray, border, browser_id, frame_id):
         print("WAITING, I'm: ", frame_id)
         time.sleep(0.05)
         if i == 5:
-            print("Gave up waiting ", frame_id, browser_id)
+            print("Gave up waiting ", frame_id)
+            break
 
     client.deregisterFrame(frame_id)
     client.lastClassificationTime = current_milli_time()
-    clientsDict[browser_id] = client
-    
-    return combinedDigits, calculating
+
+    return client
+
 
 
 def findSudoku(gray, border):
     
     dimg = digitfinder.dewarp(gray, border)
 
-    # digitfinder.saveImg("steps", dimg)
-
-    digits = digitfinder.splitByDigits(dimg)[1:]
+    digits = digitfinder.splitByDigits(dimg)
 
     toNumbers = digitfinder.classifyDigits(digits)
 
-    # print(np.matrix(toNumbers))
-
-    # for j in range(len(digits)):
-    #     row = digits[j]
-    #     for i in range(len(row)):
-    #         if row[i] is not None:
-    #             digitfinder.saveImg("IMG_2511", row[i]*255, toNumbers[j][i])
-
     solvedSudoku = sudokusolver.solve(toNumbers)
-
-    # print(np.matrix(solvedSudoku))
-
-    # solvedSudoku = Nones
 
     isItSudoku = False
 
-    # print("sending to sudoku")
     if solvedSudoku is None:
-        # print("No sudoku :(")
         solvedSudoku = toNumbers
     else:
-        # print(sudokusolver.solve.cache_info())
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
-
-    # print(np.matrix(solvedSudoku))
 
     (w,h) = dimg.shape
     width = int(h / 9.0)
     renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
 
     combinedDigits = digitfinder.combineDigits(renderedDigits)
-    # digitfinder.saveImg("steps", combinedDigits)
 
     return combinedDigits, isItSudoku
 

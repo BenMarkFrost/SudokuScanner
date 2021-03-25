@@ -3,7 +3,7 @@ import sys
 # sys.path.append('../')
 # sys.path.insert(1, '../')
 # from server import sudokuscanner
-import recordSpeed
+from tests import recordSpeed
 import time
 import numpy as np
 

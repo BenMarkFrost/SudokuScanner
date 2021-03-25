@@ -60,6 +60,16 @@ function displayLatency(id){
 
     latency = Math.ceil(sum / rollingAverageTracker.length)
 
+    tempFrameRate = 15
+
+    if (latency < 200){
+        tempFrameRate = 15
+    } else {
+        tempFrameRate = 5
+    } 
+
+    editableStream.getVideoTracks()[0].applyConstraints({frameRate: tempFrameRate});
+
     if (latency > worst){
         worst = latency;
     } else if (latency < best){

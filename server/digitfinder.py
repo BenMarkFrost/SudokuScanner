@@ -38,7 +38,7 @@ def combineBorderAndImg(border, img):
     return outputImage
 
 def splitByDigits(img):
-    digits = [[]]
+    digits = []
 
     (w,h) = img.shape
     # print("Shape: " + str(w) + " " + str(h))

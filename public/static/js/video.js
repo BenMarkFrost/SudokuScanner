@@ -3,6 +3,7 @@
 let video = document.getElementById("videoInput");
 let mobile = Boolean;
 mobile = false;
+let editableStream;
 
 if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
     console.log("Mobile")
@@ -18,6 +19,8 @@ async function runWebcamCapture() {
 
     navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', frameRate: 15}, audio: false })
         .then(function(stream) {
+
+            editableStream = stream;
 
             video.srcObject = stream;
             video.onloadedmetadata = () => {
