@@ -300,8 +300,12 @@ def combineDigits(digits):
     # concatVert = np.zeros((33,33))
     for row in digits:
         rows.append(np.concatenate(row, axis=1))
+    
+    combineDigits = np.float32(np.concatenate(rows, axis=0))
 
-    return np.float32(np.concatenate(rows, axis=0))
+    saveImg("output", combineDigits, "savedImage")
+
+    return combineDigits
 
 def calculateThreshold(img):
 
@@ -323,7 +327,7 @@ def findContours(img):
 
     biggestContour = None
 
-    if (cv2.contourArea(contours[0]) < 25000): return None
+    if (cv2.contourArea(contours[0]) < 40000): return None
 
     for c in contours:
 

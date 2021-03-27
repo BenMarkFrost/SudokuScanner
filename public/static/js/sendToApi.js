@@ -23,8 +23,6 @@ function displayLatency(id){
     try{
         timeOfAPICall = latencyTracker[id];
         delete latencyTracker[id];
-        // console.log(timeOfAPICall);
-        // let d = new Date();
         latency = Date.now() - timeOfAPICall;
         console.log("Received " + id)
 
@@ -85,8 +83,6 @@ function displayLatency(id){
 
 function upload(frame){
 
-    // document.querySelector("#video").src = frame;
-
     if (!synced){
         tempFrame = urlCreator.createObjectURL(frame);
         document.querySelector("#video").src = tempFrame;
@@ -100,7 +96,6 @@ function upload(frame){
     
     let xhr = new XMLHttpRequest();
     xhr.open('POST', window.location.origin + '/frame', true);
-    // xhr.open('POST', 'https://sudokuapp-jy7atdmmqq-ew.a.run.app/frame', true)
 
     xhr.responseType = "blob";
     xhr.onload = function () {
@@ -110,54 +105,11 @@ function upload(frame){
 
             solutionImg = urlCreator.createObjectURL(this.response);
 
-            
             document.querySelector("#image").src = solutionImg;
-
-            // data.push(solutionImg);
-
-            // console.log(this.response)
             
             displayLatency(xhr.getResponseHeader("x-filename"))
 
             data.push(solutionImg)
-
-            // console.log(xhr.getResponseHeader("x-filename"))
-
-            // returnedImg = this.response;
-
-            // var file = new File([returnedImg], "response.jpg", { type: "image/jpeg", });
-            
-            // console.log(file);
-
-            // solutionImg = file;
-
-            // console.log("Received " + response["id"]);
-            // displayLatency(response["id"]);
-
-            // Make this work for more than one puzzle
-            // solutionImg = response["img"]
-
-            // img = this.response
-            // console.log(type(img)
-
-            // print(solutionImg)
-
-            // var resp = this.response;
-            // var byteArray = new Uint8Array(resp);
-            // var str = String.fromCharCode.apply(null, byteArray);
-            // var src = "data:image/jpeg;base64," + btoa(str);
-            // // console.log(btoa(str));
-            // var img = document.createElement("img");
-            // img.src = src;
-
-
-            // let vidOut = document.getElementById("canvasOutput");
-            // vidOut.
-
-            // solutionImg = src
-
-            // var img = document.createElement("img");
-            // img.src = src;
 
         }
         else{
@@ -165,7 +117,7 @@ function upload(frame){
         }
     };
     
-    if (!(Object.keys(latencyTracker).length > 20)) {
+    if (Object.keys(latencyTracker).length < 20) {
         xhr.send(formdata);
         console.log("Sending " + frame_id);
         latencyTracker[frame_id] = Date.now();

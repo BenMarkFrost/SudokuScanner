@@ -7,8 +7,10 @@ from tests import recordSpeed
 import time
 import numpy as np
 
+print("running")
 
 camera = cv2.VideoCapture(0)
+
 
 def runApp():
     while True:
