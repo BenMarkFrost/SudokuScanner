@@ -6,7 +6,7 @@
  - name: 'gcr.io/cloud-builders/docker'
    args: ['push', 'eu.gcr.io/$PROJECT_ID/sudokuapp:$COMMIT_SHA']
  # Deploy container image to Cloud Run
- - name: 'eu.gcr.io/google.com/cloudsdktool/cloud-sdk'
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
    entrypoint: gcloud
    args:
    - 'run'
