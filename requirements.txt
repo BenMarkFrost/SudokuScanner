@@ -4,7 +4,6 @@ h5py==2.10.0
 image==1.5.33
 imageio==2.9.0
 imutils==0.5.4
-matplotlib==3.3.4
 numpy==1.19.5
 opencv-python==4.5.1.48
 pandas==1.1.5
@@ -14,4 +13,6 @@ scipy==1.5.4
 tqdm==4.57.0
 memoization==0.3.2
 func-timeout==4.3.5
-aiortc==1.2.0
+aiortc
+aiodns
+aiohttp
