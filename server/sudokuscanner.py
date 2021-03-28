@@ -54,7 +54,7 @@ def scan(img, browser_id):
 
     timeTaken = endTime - startTime
 
-    # outputImage = cv2.add(np.float32(outputImage), np.float32(img))
+    outputImage = cv2.add(np.float32(outputImage), np.float32(img))
 
     # digitfinder.saveImg("output", outputImage, "combined")
 
