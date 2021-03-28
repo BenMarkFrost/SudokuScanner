@@ -9,13 +9,14 @@ var pc = null;
 
 // data channel
 var dc = null, dcInterval = null;
+let originalstream;
 
 function createPeerConnection() {
     var config = {
         sdpSemantics: 'unified-plan'
     };
 
-    // config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
+    config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
 
     pc = new RTCPeerConnection(config);
 
@@ -37,10 +38,8 @@ function createPeerConnection() {
 
     // connect audio / video
     pc.addEventListener('track', function(evt) {
-        if (evt.track.kind == 'video')
-            document.getElementById('video').srcObject = evt.streams[0];
-        else
-            document.getElementById('audio').srcObject = evt.streams[0];
+        document.getElementById('video').srcObject = evt.streams[0];
+        document.getElementById('originalvideo').srcObject = originalstream;
     });
 
     return pc;
@@ -146,6 +145,7 @@ function start() {
     navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
         stream.getTracks().forEach(function(track) {
             pc.addTrack(track, stream);
+            originalstream = stream
         });
         return negotiate();
     }, function(err) {
