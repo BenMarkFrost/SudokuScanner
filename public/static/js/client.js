@@ -15,9 +15,7 @@ function createPeerConnection() {
         sdpSemantics: 'unified-plan'
     };
 
-    if (document.getElementById('use-stun').checked) {
-        config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
-    }
+    // config.iceServers = [{urls: ['stun:stun.l.google.com:19302']}];
 
     pc = new RTCPeerConnection(config);
 
@@ -70,22 +68,16 @@ function negotiate() {
         var offer = pc.localDescription;
         var codec;
 
-        codec = document.getElementById('audio-codec').value;
-        if (codec !== 'default') {
-            offer.sdp = sdpFilterCodec('audio', codec, offer.sdp);
-        }
+        // codec = document.getElementById('video-codec').value;
+        // if (codec !== 'default') {
+        //     offer.sdp = sdpFilterCodec('video', codec, offer.sdp);
+        // }
 
-        codec = document.getElementById('video-codec').value;
-        if (codec !== 'default') {
-            offer.sdp = sdpFilterCodec('video', codec, offer.sdp);
-        }
-
-        document.getElementById('offer-sdp').textContent = offer.sdp;
+        console.log(offer.sdp);
         return fetch('/offer', {
             body: JSON.stringify({
                 sdp: offer.sdp,
-                type: offer.type,
-                video_transform: document.getElementById('video-transform').value
+                type: offer.type
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -95,7 +87,7 @@ function negotiate() {
     }).then(function(response) {
         return response.json();
     }).then(function(answer) {
-        document.getElementById('answer-sdp').textContent = answer.sdp;
+        console.log(answer.sdp);
         return pc.setRemoteDescription(answer);
     }).catch(function(e) {
         alert(e);
@@ -118,65 +110,63 @@ function start() {
         }
     }
 
-    if (document.getElementById('use-datachannel').checked) {
-        var parameters = JSON.parse(document.getElementById('datachannel-parameters').value);
+    // if (document.getElementById('use-datachannel').checked) {
+    //     var parameters = JSON.parse(document.getElementById('datachannel-parameters').value);
 
-        dc = pc.createDataChannel('chat', parameters);
-        dc.onclose = function() {
-            clearInterval(dcInterval);
-            dataChannelLog.textContent += '- close\n';
-        };
-        dc.onopen = function() {
-            dataChannelLog.textContent += '- open\n';
-            dcInterval = setInterval(function() {
-                var message = 'ping ' + current_stamp();
-                dataChannelLog.textContent += '> ' + message + '\n';
-                dc.send(message);
-            }, 1000);
-        };
-        dc.onmessage = function(evt) {
-            dataChannelLog.textContent += '< ' + evt.data + '\n';
+    //     dc = pc.createDataChannel('chat', parameters);
+    //     dc.onclose = function() {
+    //         clearInterval(dcInterval);
+    //         dataChannelLog.textContent += '- close\n';
+    //     };
+    //     dc.onopen = function() {
+    //         dataChannelLog.textContent += '- open\n';
+    //         dcInterval = setInterval(function() {
+    //             var message = 'ping ' + current_stamp();
+    //             dataChannelLog.textContent += '> ' + message + '\n';
+    //             dc.send(message);
+    //         }, 1000);
+    //     };
+    //     dc.onmessage = function(evt) {
+    //         dataChannelLog.textContent += '< ' + evt.data + '\n';
 
-            if (evt.data.substring(0, 4) === 'pong') {
-                var elapsed_ms = current_stamp() - parseInt(evt.data.substring(5), 10);
-                dataChannelLog.textContent += ' RTT ' + elapsed_ms + ' ms\n';
-            }
-        };
-    }
+    //         if (evt.data.substring(0, 4) === 'pong') {
+    //             var elapsed_ms = current_stamp() - parseInt(evt.data.substring(5), 10);
+    //             dataChannelLog.textContent += ' RTT ' + elapsed_ms + ' ms\n';
+    //         }
+    //     };
+    // }
 
     var constraints = {
-        audio: document.getElementById('use-audio').checked,
-        video: false
+        audio: false,
+        video: { width: 1280, height: 720 }
     };
 
-    if (document.getElementById('use-video').checked) {
-        var resolution = document.getElementById('video-resolution').value;
-        if (resolution) {
-            resolution = resolution.split('x');
-            constraints.video = {
-                width: parseInt(resolution[0], 0),
-                height: parseInt(resolution[1], 0)
-            };
-        } else {
-            constraints.video = true;
-        }
-    }
+    document.getElementById('media').style.display = 'block';
 
-    if (constraints.audio || constraints.video) {
-        if (constraints.video) {
-            document.getElementById('media').style.display = 'block';
-        }
-        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-            stream.getTracks().forEach(function(track) {
-                pc.addTrack(track, stream);
-            });
-            return negotiate();
-        }, function(err) {
-            alert('Could not acquire media: ' + err);
+    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        stream.getTracks().forEach(function(track) {
+            pc.addTrack(track, stream);
         });
-    } else {
-        negotiate();
-    }
+        return negotiate();
+    }, function(err) {
+        alert('Could not acquire media: ' + err);
+    });
+
+    // if (constraints.audio || constraints.video) {
+    //     if (constraints.video) {
+    //         document.getElementById('media').style.display = 'block';
+    //     }
+    //     navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+    //         stream.getTracks().forEach(function(track) {
+    //             pc.addTrack(track, stream);
+    //         });
+    //         return negotiate();
+    //     }, function(err) {
+    //         alert('Could not acquire media: ' + err);
+    //     });
+    // } else {
+    //     negotiate();
+    // }
 
     document.getElementById('stop').style.display = 'inline-block';
 }

@@ -28,7 +28,7 @@ clientsDict = {}
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
-def scan(img, browser_id, frame_id):
+def scan(img, browser_id):
 
     startTime = current_milli_time()
 
@@ -42,9 +42,9 @@ def scan(img, browser_id, frame_id):
         pass
 
     if border is None:
-        return np.zeros(img.shape), False
+        return img, False
 
-    combinedDigits, calculating = manageClients(gray, border, browser_id, frame_id)
+    combinedDigits, calculating = manageClients(gray, border, browser_id)
 
     skewedSolution = digitfinder.warp(img, combinedDigits, border)
 
@@ -54,10 +54,18 @@ def scan(img, browser_id, frame_id):
 
     timeTaken = endTime - startTime
 
+    outputImage = cv2.add(np.float32(outputImage), np.float32(img))
+
+    # digitfinder.saveImg("output", outputImage, "combined")
+
+    # outputImage = np.float32(outputImage)
+
+    # print(type(outputImage))
+
     return outputImage, calculating
 
 
-def manageClients(gray, border, browser_id, frame_id):
+def manageClients(gray, border, browser_id):
 
     global clientsDict
 
@@ -65,7 +73,7 @@ def manageClients(gray, border, browser_id, frame_id):
 
         client = Client(browser_id)
 
-        client = cacheClient(client, frame_id, gray, border)
+        client = cacheClient(client, gray, border)
 
         print("New client: " + str(browser_id))
 
@@ -81,33 +89,33 @@ def manageClients(gray, border, browser_id, frame_id):
             return client.savedOutput, False
 
         else:
-            client = cacheClient(client, frame_id, gray, border)
+            client = cacheClient(client, gray, border)
 
     clientsDict[browser_id] = client
 
-    print("true")
+    # print("true")
     
     return client.savedOutput, True
 
 
-def cacheClient(client, frame_id, gray, border):
+def cacheClient(client, gray, border):
 
-    client.registerFrame(frame_id)
+    # client.registerFrame(frame_id)
     combinedDigits, client.solved = findSudoku(gray, border)
 
     if client.solved or client.savedOutput is None:
         client.savedOutput = combinedDigits
 
-    for i in range(5):
-        if client.isNext(frame_id):
-            break
-        print("WAITING, I'm: ", frame_id)
-        time.sleep(0.05)
-        if i == 5:
-            print("Gave up waiting ", frame_id)
-            break
+    # for i in range(5):
+    #     if client.isNext(frame_id):
+    #         break
+    #     print("WAITING, I'm: ", frame_id)
+    #     time.sleep(0.05)
+    #     if i == 5:
+    #         print("Gave up waiting ", frame_id)
+    #         break
 
-    client.deregisterFrame(frame_id)
+    # client.deregisterFrame(frame_id)
     client.lastClassificationTime = current_milli_time()
 
     return client
@@ -158,4 +166,4 @@ def findSudoku(gray, border):
 
 
 left = cv2.imread("IMG_2511.JPG")
-scan(imutils.resize(left, 640), 1, 1)
+scan(imutils.resize(left, 640), 1)

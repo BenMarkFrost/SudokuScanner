@@ -5,15 +5,17 @@ import logging
 import os
 import ssl
 import uuid
+import numpy as np
 
 import cv2
 from aiohttp import web
 from av import VideoFrame
+from server import sudokuscanner
 
 from aiortc import MediaStreamTrack, RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaBlackhole, MediaPlayer, MediaRecorder, MediaRelay
 
-ROOT = os.path.dirname(__file__)
+ROOT = "public"
 
 logger = logging.getLogger("pc")
 pcs = set()
@@ -27,54 +29,36 @@ class VideoTransformTrack(MediaStreamTrack):
 
     kind = "video"
 
-    def __init__(self, track, transform):
+
+    def __init__(self, track, browser_id):
         super().__init__()  # don't forget this!
         self.track = track
-        self.transform = transform
+        self.browser_id = browser_id
 
     async def recv(self):
         frame = await self.track.recv()
 
-        if self.transform == "cartoon":
-            img = frame.to_ndarray(format="bgr24")
+        img = frame.to_ndarray(format="bgr24")
 
-            # prepare color
-            img_color = cv2.pyrDown(cv2.pyrDown(img))
-            for _ in range(6):
-                img_color = cv2.bilateralFilter(img_color, 9, 9, 7)
-            img_color = cv2.pyrUp(cv2.pyrUp(img_color))
+        new_img, calculating = sudokuscanner.scan(img, self.browser_id)
 
-            # prepare edges
-            img_edges = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-            img_edges = cv2.adaptiveThreshold(
-                cv2.medianBlur(img_edges, 7),
-                255,
-                cv2.ADAPTIVE_THRESH_MEAN_C,
-                cv2.THRESH_BINARY,
-                9,
-                2,
-            )
-            img_edges = cv2.cvtColor(img_edges, cv2.COLOR_GRAY2RGB)
+        # new_img = cv2.add(np.float32(img), np.float32(new_img))
 
-            # combine color and edges
-            img = cv2.bitwise_and(img_color, img_edges)
-
-            # rebuild a VideoFrame, preserving timing information
-            new_frame = VideoFrame.from_ndarray(img, format="bgr24")
-            new_frame.pts = frame.pts
-            new_frame.time_base = frame.time_base
-            return new_frame
-        else:
-            return frame
+        # rebuild a VideoFrame, preserving timing information
+        new_frame = VideoFrame.from_ndarray(np.uint8(new_img), format="bgr24")
+        new_frame.pts = frame.pts
+        new_frame.time_base = frame.time_base
+        return new_frame
 
 
 async def index(request):
-    content = open(os.path.join(ROOT, "index.html"), "r").read()
+    print(ROOT + "/templates/index.html")
+    content = open(ROOT + "/templates/index.html", "r").read()
     return web.Response(content_type="text/html", text=content)
 
 
 async def javascript(request):
-    content = open(os.path.join(ROOT, "client.js"), "r").read()
+    content = open(ROOT + "/static/js/client.js", "r").read()
     return web.Response(content_type="application/javascript", text=content)
 
 
@@ -91,8 +75,8 @@ async def offer(request):
 
     log_info("Created for %s", request.remote)
 
-    # prepare local media
-    player = MediaPlayer(os.path.join(ROOT, "demo-instruct.wav"))
+    # # prepare local media
+    # player = MediaPlayer(os.path.join(ROOT, "demo-instruct.wav"))
     if args.record_to:
         recorder = MediaRecorder(args.record_to)
     else:
@@ -122,7 +106,7 @@ async def offer(request):
         elif track.kind == "video":
             pc.addTrack(
                 VideoTransformTrack(
-                    relay.subscribe(track), transform=params["video_transform"]
+                    relay.subscribe(track), browser_id=pc_id
                 )
             )
             if args.record_to:
@@ -166,7 +150,7 @@ if __name__ == "__main__":
         "--host", default="0.0.0.0", help="Host for HTTP server (default: 0.0.0.0)"
     )
     parser.add_argument(
-        "--port", type=int, default=8080, help="Port for HTTP server (default: 8080)"
+        "--port", type=int, default=5000, help="Port for HTTP server (default: 8080)"
     )
     parser.add_argument("--record-to", help="Write received media to a file."),
     parser.add_argument("--verbose", "-v", action="count")
