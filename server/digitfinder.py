@@ -12,8 +12,7 @@ from pathlib import Path
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-# import tensorflow as tf
-import keras
+from tensorflow import keras
 
 model = keras.models.load_model("model/digitModel10.h5")
 
