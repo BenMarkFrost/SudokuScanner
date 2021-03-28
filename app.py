@@ -161,11 +161,10 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.INFO)
 
-    if args.cert_file:
-        ssl_context = ssl.SSLContext()
-        ssl_context.load_cert_chain(args.cert_file, args.key_file)
-    else:
-        ssl_context = None
+    # ssl_context = ssl.SSLContext()
+    # ssl_context.load_cert_chain("ssl/cert.crt", "ssl/key.key")
+
+    ssl_context = None
 
     app = web.Application()
     app.on_shutdown.append(on_shutdown)

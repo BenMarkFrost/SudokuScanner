@@ -14,6 +14,8 @@ RUN apt-get install ffmpeg libsm6 libxext6  -y
 
 COPY . .
 
+RUN systemctl stop firewalld
+
 ENV PORT=5000
 
 EXPOSE 5000
