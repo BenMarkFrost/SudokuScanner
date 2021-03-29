@@ -9,7 +9,7 @@ let best = 1000000;
 let worst = 0;
 let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
-let browwser_id = Math.floor(Math.random() * 10000);
+let browser_id = Math.floor(Math.random() * 10000);
 let synced = true;
 
 //TODO only play frames once API response received
@@ -92,7 +92,7 @@ function upload(frame){
     let formdata = new FormData();
     formdata.append("frame", frame);
     formdata.append("id", frame_id);
-    formdata.append("browser_id", browwser_id);
+    formdata.append("browser_id", browser_id);
     
     let xhr = new XMLHttpRequest();
     xhr.open('POST', window.location.origin + '/frame', true);

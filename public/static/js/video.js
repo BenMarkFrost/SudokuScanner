@@ -46,6 +46,7 @@ async function runWebcamCapture() {
             async function processFrame(){
 
                 if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
+                    // 1000ms / 15 fps = 67ms
                     await new Promise(r => setTimeout(r, 67));
                 }
 
@@ -62,7 +63,7 @@ async function runWebcamCapture() {
                         processFrame();
                     })
                 } else {
-                    window.requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
                         processFrame();
                     })
                 }
