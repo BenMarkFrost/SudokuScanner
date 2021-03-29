@@ -16,7 +16,7 @@ def runApp():
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            recordSpeed.finish()
+            # recordSpeed.finish()
             break
 
         ret, frame = camera.read()
@@ -32,6 +32,8 @@ def runApp():
         frame = np.uint8(frame)
 
         response = np.uint8(response)
+
+        # print(frame.shape, response.shape)
 
         output = cv2.add(frame, response)
 

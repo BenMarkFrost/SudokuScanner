@@ -5,7 +5,7 @@ class Client:
     frames = []
     lastClassificationTime = 10000
     browser_id = 0
-    savedOutput = np.zeros((300, 300, 1))
+    savedOutput = np.zeros((300, 300, 3))
     solved = False
 
     def __init__(self, browser_id):

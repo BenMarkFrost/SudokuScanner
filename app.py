@@ -37,16 +37,16 @@ def frame():
 
         frame = np.array(frame)
 
-        try:
+        # try:
 
-            outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+        #     outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
         
-        except FunctionTimedOut:
-            print("sudokuscanner timed out")
-            outputImage = np.zeros(img.shape)
-            calculated = False
+        # except FunctionTimedOut:
+        #     print("sudokuscanner timed out")
+        #     outputImage = np.zeros(img.shape)
+        #     calculated = False
 
-        # outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+        outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
 
         # outputImage = np.zeros(frame.shape)
 

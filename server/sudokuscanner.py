@@ -14,6 +14,7 @@ import time
 import pandas as pd
 from func_timeout import func_set_timeout
 from threading import Thread
+import time
 
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
@@ -26,11 +27,12 @@ def current_milli_time():
     return round(time.time() * 1000)
 
 clientsDict = {}
+runningThreads = []
 
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
-@func_set_timeout(0.3)
+# @func_set_timeout(0.3)
 def scan(img, browser_id, frame_id):
 
     startTime = current_milli_time()
@@ -62,16 +64,18 @@ def scan(img, browser_id, frame_id):
 
 def manageClients(gray, border, browser_id, frame_id):
 
-    global clientsDict
+    global clientsDict, runningThreads
 
     if browser_id not in clientsDict:
 
         client = Client(browser_id)
 
         # client = cacheClient(client, frame_id, gray, border)
+        client.lastClassificationTime = current_milli_time()
+        clientsDict[browser_id] = client
         thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
         thread.start()
-        thread.join()
+        # thread.join()
 
         print("New client: " + str(browser_id))
 
@@ -79,6 +83,8 @@ def manageClients(gray, border, browser_id, frame_id):
         client = clientsDict[browser_id]
         
         timeSinceClassification = current_milli_time() - client.lastClassificationTime
+
+        print("Time since last " + str(timeSinceClassification))
 
         if timeSinceClassification < 500:
             return client.savedOutput, False
@@ -88,9 +94,11 @@ def manageClients(gray, border, browser_id, frame_id):
 
         else:
             # client = cacheClient(client, frame_id, gray, border)
+            client.lastClassificationTime = current_milli_time()
+            clientsDict[browser_id] = client
             thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
             thread.start()
-            thread.join()
+            # thread.join()
 
     print("true")
 
@@ -105,6 +113,8 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     print("started threaded frame for " + str(frame_id))
 
     global clientsDict
+
+    # time.sleep(2)
 
     # client.registerFrame(frame_id)
     client.savedOutput, client.solved = findSudoku(gray, border)
@@ -122,7 +132,7 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     #         break
 
     # client.deregisterFrame(frame_id)
-    client.lastClassificationTime = current_milli_time()
+    # client.lastClassificationTime = current_milli_time()
 
     clientsDict[browser_id] = client
 
