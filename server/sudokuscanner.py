@@ -117,7 +117,15 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     # time.sleep(2)
 
     # client.registerFrame(frame_id)
-    client.savedOutput, client.solved = findSudoku(gray, border)
+    combinedDigits, solved = findSudoku(gray, border)
+
+    if solved:
+        client.savedOutput = combinedDigits
+        client.solved = solved
+    else:
+        if not client.solved:
+            client.savedOutput = combinedDigits
+
 
     # if client.solved or client.savedOutput is None:
     #     client.savedOutput = combinedDigits
