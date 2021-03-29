@@ -12,6 +12,8 @@ from io import BytesIO
 from PIL import Image
 import time
 import pandas as pd
+from func_timeout import func_set_timeout
+from threading import Thread
 
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
@@ -28,6 +30,7 @@ clientsDict = {}
 
 # TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
 
+@func_set_timeout(0.3)
 def scan(img, browser_id, frame_id):
 
     startTime = current_milli_time()
@@ -65,7 +68,10 @@ def manageClients(gray, border, browser_id, frame_id):
 
         client = Client(browser_id)
 
-        client = cacheClient(client, frame_id, gray, border)
+        # client = cacheClient(client, frame_id, gray, border)
+        thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+        thread.start()
+        thread.join()
 
         print("New client: " + str(browser_id))
 
@@ -81,36 +87,47 @@ def manageClients(gray, border, browser_id, frame_id):
             return client.savedOutput, False
 
         else:
-            client = cacheClient(client, frame_id, gray, border)
-
-    clientsDict[browser_id] = client
+            # client = cacheClient(client, frame_id, gray, border)
+            thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+            thread.start()
+            thread.join()
 
     print("true")
+
+    print("read threadded frame for " + str(frame_id))
+
     
     return client.savedOutput, True
 
 
-def cacheClient(client, frame_id, gray, border):
+def cacheClient(client, browser_id, frame_id, gray, border):
 
-    client.registerFrame(frame_id)
-    combinedDigits, client.solved = findSudoku(gray, border)
+    print("started threaded frame for " + str(frame_id))
 
-    if client.solved or client.savedOutput is None:
-        client.savedOutput = combinedDigits
+    global clientsDict
 
-    for i in range(5):
-        if client.isNext(frame_id):
-            break
-        print("WAITING, I'm: ", frame_id)
-        time.sleep(0.05)
-        if i == 5:
-            print("Gave up waiting ", frame_id)
-            break
+    # client.registerFrame(frame_id)
+    client.savedOutput, client.solved = findSudoku(gray, border)
 
-    client.deregisterFrame(frame_id)
+    # if client.solved or client.savedOutput is None:
+    #     client.savedOutput = combinedDigits
+
+    # for i in range(5):
+    #     if client.isNext(frame_id):
+    #         break
+    #     print("WAITING, I'm: ", frame_id)
+    #     time.sleep(0.05)
+    #     if i == 5:
+    #         print("Gave up waiting ", frame_id)
+    #         break
+
+    # client.deregisterFrame(frame_id)
     client.lastClassificationTime = current_milli_time()
 
-    return client
+    clientsDict[browser_id] = client
+
+    print("written threadded frame for " + str(frame_id))
+    
 
 
 

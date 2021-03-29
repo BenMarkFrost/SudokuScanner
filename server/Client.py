@@ -1,9 +1,11 @@
+import numpy as np
+
 class Client:
 
     frames = []
     lastClassificationTime = 10000
     browser_id = 0
-    savedOutput = None
+    savedOutput = np.zeros((300, 300, 1))
     solved = False
 
     def __init__(self, browser_id):

@@ -35,7 +35,7 @@ def doTheScan(img):
 
     stop = time.time()
 
-    saveResult(stop-start, calculating)
+    # saveResult(stop-start, calculating)
 
     return result
 

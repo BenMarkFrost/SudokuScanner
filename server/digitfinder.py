@@ -303,7 +303,7 @@ def combineDigits(digits):
     
     combineDigits = np.float32(np.concatenate(rows, axis=0))
 
-    saveImg("output", combineDigits, "savedImage")
+    # saveImg("output", combineDigits, "savedImage")
 
     return combineDigits
 

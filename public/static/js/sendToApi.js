@@ -58,15 +58,15 @@ function displayLatency(id){
 
     latency = Math.ceil(sum / rollingAverageTracker.length)
 
-    tempFrameRate = 15
+    // tempFrameRate = 15
 
-    if (latency < 200){
-        tempFrameRate = 15
-    } else {
-        tempFrameRate = 5
-    } 
+    // if (latency < 200){
+    //     tempFrameRate = 15
+    // } else {
+    //     tempFrameRate = 5
+    // } 
 
-    editableStream.getVideoTracks()[0].applyConstraints({frameRate: tempFrameRate});
+    // editableStream.getVideoTracks()[0].applyConstraints({frameRate: tempFrameRate});
 
     if (latency > worst){
         worst = latency;
@@ -138,7 +138,7 @@ function toAPI(canvas){
 
     data = []
 
-    canvas.toBlob(upload, 'image/jpeg');
+    canvas.toBlob(upload, 'image/jpeg', 0.5);
 
     // console.log(data);
 

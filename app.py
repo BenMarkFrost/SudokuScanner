@@ -8,8 +8,9 @@ import cv2
 from io import BytesIO
 import numpy as np
 import sys
-sys.path.append('../')
+from func_timeout import func_timeout, FunctionTimedOut
 
+sys.path.append('../')
 
 # TODO Clean up blobs!!
 
@@ -36,7 +37,16 @@ def frame():
 
         frame = np.array(frame)
 
-        outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+        try:
+
+            outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+        
+        except FunctionTimedOut:
+            print("sudokuscanner timed out")
+            outputImage = np.zeros(img.shape)
+            calculated = False
+
+        # outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
 
         # outputImage = np.zeros(frame.shape)
 
