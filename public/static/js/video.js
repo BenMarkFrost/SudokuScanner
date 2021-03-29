@@ -15,6 +15,11 @@ if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.tes
     video.height = 480;
 }
 
+// @ https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function runWebcamCapture() {
 
     navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', frameRate: 15}, audio: false })
@@ -32,7 +37,17 @@ async function runWebcamCapture() {
             canvas.width = video.width
             canvas.height = video.height
 
-            function processFrame(){
+            if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+                console.log("video frame callback supported")
+            } else {
+                console.log("video frame callback NOT supported")
+            }
+
+            async function processFrame(){
+
+                if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
+                    await new Promise(r => setTimeout(r, 67));
+                }
 
                 // Drawing Original Video
                 ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height);
@@ -42,9 +57,15 @@ async function runWebcamCapture() {
 
                 // console.log(data);
 
-                video.requestVideoFrameCallback(() => {
-                    processFrame();
-                })
+                if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+                    video.requestVideoFrameCallback(() => {
+                        processFrame();
+                    })
+                } else {
+                    window.requestAnimationFrame(() => {
+                        processFrame();
+                    })
+                }
 
             }
             
