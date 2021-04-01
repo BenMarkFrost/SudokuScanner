@@ -120,8 +120,8 @@ def cacheClient(client, browser_id, frame_id, gray, border):
         client.solved = True
         client.reclassify = False
     else:
-        # if not client.solved:
-        #     client.savedOutput = combinedDigits
+        if not client.solved:
+            client.savedOutput = combinedDigits
         client.reclassify = True
 
 

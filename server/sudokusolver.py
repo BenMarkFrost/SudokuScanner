@@ -24,7 +24,7 @@ def solve(sudoku):
 
     return solution
 
-@func_set_timeout(0.1)
+@func_set_timeout(0.5)
 def calculateSolution(sudoku):
 
     # print(sudoku)
