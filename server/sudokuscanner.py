@@ -84,10 +84,10 @@ def manageClients(gray, border, browser_id, frame_id):
 
         # print("Time since last " + str(timeSinceClassification))
 
-        if timeSinceClassification < 500:
+        if timeSinceClassification < 200:
             return client.savedOutput, False
 
-        elif timeSinceClassification < 3000 and client.solved == True and client.reclassify == False:
+        elif timeSinceClassification < 1000 and client.solved == True and client.reclassify == False:
             return client.savedOutput, False
 
         else:
