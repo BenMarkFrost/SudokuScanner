@@ -14,7 +14,7 @@ let synced = true;
 
 //TODO only play frames once API response received
 
-function displayLatency(id){
+function displayLatency(id, timetaken){
 
     // TODO Display best and worst and average latencies here?
 
@@ -77,7 +77,7 @@ function displayLatency(id){
     // console.log(sum);
 
     // console.log(rollingAverageTracker)
-    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms latency. Worst: " + worst + ", best: " + best;
+    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms total latency. Worst: " + worst + ", best: " + best + '<br>' + "Server processing time: " + timetaken + "ms";
 
 }
 
@@ -107,7 +107,8 @@ function upload(frame){
 
             document.querySelector("#image").src = solutionImg;
             
-            displayLatency(xhr.getResponseHeader("x-filename"))
+            // Do I need 'x-'?
+            displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
 
             data.push(solutionImg)
 
@@ -124,9 +125,9 @@ function upload(frame){
         frameBuffer[frame_id] = frame;
 
     } else {
-        console.error("Waiting on more than 200 frames...")
-        frameBugger = []
-        latencyTracker = []
+        console.error("Waiting on more than 20 frames...")
+        frameBuffer = {};
+        latencyTracker = {};
     }
 }
 

@@ -5,8 +5,8 @@ from skimage.segmentation import clear_border
 import scipy
 import cv2
 import os
-from server import digitfinder
-from server import sudokusolver
+from server import digitfinder, sudokusolver
+from server.Frame import Frame
 from server.Client import Client
 from io import BytesIO
 from PIL import Image
@@ -30,36 +30,34 @@ clientsDict = {}
 runningThreads = []
 
 
-# TODO add process on a separate thread that enable an API to check that the server is still running? Is there an easy way to do this with Flask?
-
 # @func_set_timeout(0.3)
-def scan(img, browser_id, frame_id):
+def scan(browser_id, frame):
 
     startTime = current_milli_time()
 
-    thresh, gray = digitfinder.calculateThreshold(img)
-
-    border = None
+    frame.thresh, frame.gray = digitfinder.calculateThreshold(frame.img)
 
     try: 
-        border = digitfinder.findContours(thresh)
+        frame.border = digitfinder.findContours(frame.thresh)
     except:
         pass
 
-    if border is None:
-        return np.zeros(img.shape), False
+    if frame.border is None:
+        frame.outputImage = np.zeros(frame.img.shape)
+        endTime = current_milli_time()
+        frame.timeTaken = endTime - startTime
+        return frame
 
-    combinedDigits, calculating = manageClients(gray, border, browser_id, frame_id)
+    frame.combinedDigits, frame.calculated = manageClients(frame.gray, frame.border, browser_id, frame.frame_id)
 
-    skewedSolution = digitfinder.warp(img, combinedDigits, border)
+    frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
-    outputImage = digitfinder.combineBorderAndImg(border, skewedSolution)
+    frame.outputImage = digitfinder.combineBorderAndImg(frame.border, frame.skewedSolution)
 
     endTime = current_milli_time()
+    frame.timeTaken = endTime - startTime
 
-    timeTaken = endTime - startTime
-
-    return outputImage, calculating
+    return frame
 
 
 def manageClients(gray, border, browser_id, frame_id):
@@ -84,12 +82,12 @@ def manageClients(gray, border, browser_id, frame_id):
         
         timeSinceClassification = current_milli_time() - client.lastClassificationTime
 
-        print("Time since last " + str(timeSinceClassification))
+        # print("Time since last " + str(timeSinceClassification))
 
         if timeSinceClassification < 500:
             return client.savedOutput, False
 
-        elif timeSinceClassification < 3000 and client.solved == True:
+        elif timeSinceClassification < 3000 and client.solved == True and client.reclassify == False:
             return client.savedOutput, False
 
         else:
@@ -99,8 +97,6 @@ def manageClients(gray, border, browser_id, frame_id):
             thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
             thread.start()
             # thread.join()
-
-    print("true")
 
     print("read threadded frame for " + str(frame_id))
 
@@ -121,10 +117,13 @@ def cacheClient(client, browser_id, frame_id, gray, border):
 
     if solved:
         client.savedOutput = combinedDigits
-        client.solved = solved
+        client.solved = True
+        client.reclassify = False
     else:
-        if not client.solved:
-            client.savedOutput = combinedDigits
+        # if not client.solved:
+        #     client.savedOutput = combinedDigits
+        client.reclassify = True
+
 
 
     # if client.solved or client.savedOutput is None:
@@ -193,4 +192,5 @@ def findSudoku(gray, border):
 
 
 left = cv2.imread("IMG_2511.JPG")
-scan(imutils.resize(left, 640), 1, 1)
+frame = Frame(imutils.resize(left, 640), 1)
+scan(1, frame)

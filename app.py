@@ -1,8 +1,9 @@
 # sys.path.insert(1, '/server')
-from flask import Flask, request, Response, render_template, send_file
+from flask import Flask, request, Response, render_template, send_file, make_response
 from PIL import Image
 import time
 from server import sudokuscanner
+from server.Frame import Frame
 import codecs, json
 import cv2
 from io import BytesIO
@@ -31,11 +32,13 @@ def frame():
 
         frame_id = request.form.get("id")
         browser_id = request.form.get("browser_id")
-        frame = Image.open(request.files['frame'])
+        img = Image.open(request.files['frame'])
 
         # print(browser_id)
 
-        frame = np.array(frame)
+        img = np.array(img)
+
+        frame = Frame(img, frame_id)
 
         # try:
 
@@ -46,18 +49,20 @@ def frame():
         #     outputImage = np.zeros(img.shape)
         #     calculated = False
 
-        outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
+        frame = sudokuscanner.scan(browser_id, frame)
 
         # outputImage = np.zeros(frame.shape)
 
+
+        # Cite this
         imgIO = BytesIO()
-        pilImg = Image.fromarray((outputImage).astype(np.uint8))
+        pilImg = Image.fromarray(frame.outputImage.astype(np.uint8))
         pilImg.save(imgIO, 'JPEG', quality=50)
         imgIO.seek(0)
 
-        returnFile = send_file(imgIO, mimetype='img/jpeg')
-
-        returnFile.headers["x-filename"] = frame_id
+        returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
+        returnFile.headers["x-filename"] = frame.frame_id
+        returnFile.headers["x-timeTaken"] = frame.timeTaken
 
         return returnFile
 

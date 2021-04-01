@@ -1,6 +1,7 @@
 import cv2
 import time
 from server import sudokuscanner
+from server.Frame import Frame
 import imutils
 import pandas as pd
 import time
@@ -15,13 +16,13 @@ right = cv2.imread("IMG_2511.JPG")
 left = cv2.imread("IMG_2489.JPG")
 num = 1
 
-directory = "server/speedTestResults/withCachingSpeeds.csv"
+directory = "server/speedTestResults/ThreadingAndCompression.csv"
 try:
     df = pd.read_csv(directory, index_col=0)
 except:
     df = pd.DataFrame()
 
-def doTheScan(img):
+def startRecordedScan(img):
 
     global num
 
@@ -30,14 +31,16 @@ def doTheScan(img):
 
     start = time.time()
 
-    result, calculating = sudokuscanner.scan(img, 2, num)
+    frame = Frame(img, num)
+    frame = sudokuscanner.scan(2, frame)
+    
     num = num + 1
 
     stop = time.time()
 
-    # saveResult(stop-start, calculating)
+    saveResult(stop-start, frame.calculated)
 
-    return result
+    return frame.outputImage
 
 
 

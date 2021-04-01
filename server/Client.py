@@ -7,6 +7,7 @@ class Client:
     browser_id = 0
     savedOutput = np.zeros((300, 300, 3))
     solved = False
+    reclassify = True
 
     def __init__(self, browser_id):
         self.browser_id = browser_id

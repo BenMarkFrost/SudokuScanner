@@ -176,6 +176,8 @@ def warp(img, toWarp, border):
     pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
     pts2 = np.float32(border)
 
+    # @ https://www.geeksforgeeks.org/perspective-transformation-python-opencv/
+
     matte = cv2.getPerspectiveTransform(pts1,pts2)
     dst = cv2.warpPerspective(toWarp,matte,(cols,rows))
 

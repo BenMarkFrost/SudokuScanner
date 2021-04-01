@@ -16,7 +16,7 @@ def runApp():
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            # recordSpeed.finish()
+            recordSpeed.finish()
             break
 
         ret, frame = camera.read()
@@ -25,13 +25,13 @@ def runApp():
 
         # response = sudokuscanner.scan(frame, 2)
 
-        response = recordSpeed.doTheScan(frame)
+        response = recordSpeed.startRecordedScan(frame)
 
         endTime = current_milli_time()
 
         frame = np.uint8(frame)
 
-        response = np.uint8(response)
+        response = np.uint8(frame)
 
         # print(frame.shape, response.shape)
 
