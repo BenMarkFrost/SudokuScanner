@@ -30,6 +30,25 @@ def root():
 def frame():
     try:
 
+        if request.form.get("solutionRequest"):
+
+            browser_id = request.form.get("solutionRequest")
+
+            print("Solution request for " + str(browser_id))
+
+            solution = sudokuscanner.getSolution(browser_id)
+
+            imgIO = BytesIO()
+            pilImg = Image.fromarray(solution.astype(np.uint8))
+            pilImg.save(imgIO, 'JPEG', quality=100)
+            imgIO.seek(0)
+
+            returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
+
+            return returnFile
+            
+
+
         frame_id = request.form.get("id")
         browser_id = request.form.get("browser_id")
         img = Image.open(request.files['frame'])
@@ -53,6 +72,10 @@ def frame():
 
         # outputImage = np.zeros(frame.shape)
 
+        # print(frame)
+
+        # print(frame.solutionFrame)
+
 
         # Cite this
         imgIO = BytesIO()
@@ -63,6 +86,7 @@ def frame():
         returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
         returnFile.headers["x-filename"] = frame.frame_id
         returnFile.headers["x-timeTaken"] = frame.timeTaken
+        returnFile.headers["x-solution"] = str(frame.solutionFrame)
 
         return returnFile
 

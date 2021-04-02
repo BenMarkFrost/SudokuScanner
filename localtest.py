@@ -40,8 +40,12 @@ def runApp():
         operationTime = endTime - startTime
 
         cv2.rectangle(output, (0,0), (200, 30), (255,255,255), -1)
+        # cv2.rectangle(output, (0,30), (80, 60), (255,255,255), -1)
 
         cv2.putText(output, ("Latency: " + str(operationTime) + "ms"), (10,22), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1, cv2.LINE_AA)
+
+        # cv2.putText(output, str(solved), (10,52), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1, cv2.LINE_AA)
+
 
         cv2.imshow("output", output)
 

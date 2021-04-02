@@ -3,18 +3,24 @@ let frame_id = 0;
 let frameBuffer = {};
 let latencyTracker = {};
 let rollingAverageTracker = [];
-let data = [];
 let latencyParagraph = document.getElementById("latency");
+let timeTakenParagraph = document.getElementById("timeTaken");
+let progressParagraph = document.getElementById("progress");
+let saveBtn = document.getElementById("saveBtn");
 let best = 1000000;
 let worst = 0;
 let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
 let browser_id = Math.floor(Math.random() * 10000);
 let synced = true;
+let solvedImage = false;
+let solutionImage = {img: null, timeReceived: 0};
+let stalled = false;
+let stalledNum = 0;
 
 //TODO only play frames once API response received
 
-function displayLatency(id, timetaken){
+function displayLatency(id){
 
     // TODO Display best and worst and average latencies here?
 
@@ -77,8 +83,35 @@ function displayLatency(id, timetaken){
     // console.log(sum);
 
     // console.log(rollingAverageTracker)
-    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms total latency. Worst: " + worst + ", best: " + best + '<br>' + "Server processing time: " + timetaken + "ms";
+    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms total latency. Worst: " + worst + ", best: " + best;
 
+}
+
+function displayTimeTaken(timeTaken){
+
+    outputText =  "Server processing time: " + timeTaken + "ms";
+
+    timeTakenParagraph.innerHTML = outputText
+
+}
+
+function displaySolutionProgress(calculated){
+
+    // console.log("iscalculated: " + calculated);
+
+    if (solvedImage == false){
+
+        // console.log(calculated)
+        if (calculated == "True"){
+
+            console.log("Solution found");
+
+            solvedImage = true;
+
+            progressParagraph.innerHTML = outputText = "Sudoku solution has been found, click here to download: "
+            saveBtn.hidden = false
+        }
+    }
 }
 
 function upload(frame){
@@ -86,6 +119,16 @@ function upload(frame){
     if (!synced){
         tempFrame = urlCreator.createObjectURL(frame);
         document.querySelector("#video").src = tempFrame;
+    }
+
+    if (stalled == true){
+        // console.log("stalled");
+        if (stalledNum < 100){
+            stalledNum = stalledNum + 1;
+            return
+        } else {
+            stalledNum = 0
+        }
     }
 
     frame_id = frame_id + 1;
@@ -110,7 +153,11 @@ function upload(frame){
             // Do I need 'x-'?
             displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
 
-            data.push(solutionImg)
+            displayTimeTaken(xhr.getResponseHeader("x-timeTaken"));
+
+            displaySolutionProgress(xhr.getResponseHeader("x-solution"));
+
+            stalled = false
 
         }
         else{
@@ -118,14 +165,14 @@ function upload(frame){
         }
     };
     
-    if (Object.keys(latencyTracker).length < 20) {
+    if (Object.keys(latencyTracker).length < 20 || stalled) {
         xhr.send(formdata);
         console.log("Sending " + frame_id);
         latencyTracker[frame_id] = Date.now();
         frameBuffer[frame_id] = frame;
-
     } else {
         console.error("Waiting on more than 20 frames...")
+        stalled = true;
         frameBuffer = {};
         latencyTracker = {};
     }
@@ -136,8 +183,6 @@ function toAPI(canvas){
     // TODO add toggle button for frame sync
 
     // console.log("Found me");
-
-    data = []
 
     canvas.toBlob(upload, 'image/jpeg', 0.5);
 
@@ -151,5 +196,69 @@ function toggleFrameSync(sw){
 
     synced = sw.checked;
 
+}
+
+// @ owencm https://stackoverflow.com/questions/3916191/download-data-url-file
+function downloadURI(uri, name) {
+    var link = document.createElement("a");
+    link.download = name;
+    link.href = uri;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    delete link;
+}
+
+function requestSolutionImage(){
+
+    let formdata = new FormData();
+    formdata.append("solutionRequest", browser_id);
+    
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', window.location.origin + '/frame', true);
+
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+        if (this.status === 200) {
+
+            solutionImage.img = urlCreator.createObjectURL(this.response);
+
+            solutionImage.timeReceived = Date.now();
+        
+            console.log("solution received")
+
+            saveBtn.innerHTML = "Save Solution";
+
+            downloadSolution();
+
+        }
+        else{
+            console.error(xhr);
+        }
+
+    };
+
+    xhr.send(formdata);
+    saveBtn.innerHTML = "Waiting for server...";
+
+
+}
+
+function downloadSolution(){
+
+    console.log("Clicked download");
+
+    timeDifference = Date.now() - solutionImage.timeReceived;
+
+    console.log(timeDifference);
+
+    if (timeDifference > 3000 || timeDifference < 0){
+        requestSolutionImage();
+    } else {
+
+        console.log("saving image");
+
+        downloadURI(solutionImage.img, "sudokuSolution.jpg");
+    }
 
 }

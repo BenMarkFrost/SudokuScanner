@@ -27,7 +27,6 @@ def current_milli_time():
     return round(time.time() * 1000)
 
 clientsDict = {}
-runningThreads = []
 
 
 # @func_set_timeout(0.3)
@@ -48,7 +47,9 @@ def scan(browser_id, frame):
         frame.timeTaken = endTime - startTime
         return frame
 
-    frame.combinedDigits, frame.calculated = manageClients(frame.gray, frame.border, browser_id, frame.frame_id)
+    frame.combinedDigits, frame.solutionFrame, frame.calculated = manageClients(frame.gray, frame.border, frame.frame_id, browser_id)
+
+    # print(str(solved))
 
     frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
@@ -60,9 +61,9 @@ def scan(browser_id, frame):
     return frame
 
 
-def manageClients(gray, border, browser_id, frame_id):
+def manageClients(gray, border, frame_id, browser_id):
 
-    global clientsDict, runningThreads
+    global clientsDict
 
     if browser_id not in clientsDict:
 
@@ -85,10 +86,10 @@ def manageClients(gray, border, browser_id, frame_id):
         # print("Time since last " + str(timeSinceClassification))
 
         if timeSinceClassification < 200:
-            return client.savedOutput, False
+            return client.savedOutput, False, False
 
         elif timeSinceClassification < 1000 and client.solved == True and client.reclassify == False:
-            return client.savedOutput, False
+            return client.savedOutput, False, False
 
         else:
             # client = cacheClient(client, frame_id, gray, border)
@@ -99,9 +100,8 @@ def manageClients(gray, border, browser_id, frame_id):
             # thread.join()
 
     print("read threadded frame for " + str(frame_id))
-
     
-    return client.savedOutput, True
+    return client.savedOutput, client.solved, True
 
 
 def cacheClient(client, browser_id, frame_id, gray, border):
@@ -113,15 +113,18 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     # time.sleep(2)
 
     # client.registerFrame(frame_id)
-    combinedDigits, solved = findSudoku(gray, border)
+    combinedDigits, background, solved = findSudoku(gray, border)
 
     if solved:
         client.savedOutput = combinedDigits
+        client.backgroundForOutput = background
         client.solved = True
         client.reclassify = False
     else:
         if not client.solved:
             client.savedOutput = combinedDigits
+            client.backgroundForOutput = background
+
         client.reclassify = True
 
 
@@ -172,7 +175,26 @@ def findSudoku(gray, border):
 
     combinedDigits = digitfinder.combineDigits(renderedDigits)
 
-    return combinedDigits, isItSudoku
+    return combinedDigits, dimg, isItSudoku
+
+
+def getSolution(browser_id):
+    global clientsDict
+
+    try:
+        client = clientsDict[browser_id]
+
+        background = cv2.cvtColor(client.backgroundForOutput, cv2.COLOR_GRAY2RGB)
+
+        background = imutils.resize(background, width=297)
+
+        print(client.savedOutput.shape, client.backgroundForOutput.shape)
+
+        outputImage = cv2.add(np.uint8(client.savedOutput), np.uint8(background))
+        return outputImage
+    except Exception as e:
+        print(e)
+        return np.zeros((300,300,3))
 
 
 # def saveResult(timeTaken):
