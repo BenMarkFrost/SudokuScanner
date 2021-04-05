@@ -23,6 +23,7 @@ app = Flask(__name__,
 
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['CORS_EXPOSE_HEADERS'] = ["x-filename", "x-solution", "x-timeTaken"]
 
 # app.config["DEBUG"] = True
 
