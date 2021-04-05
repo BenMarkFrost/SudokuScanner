@@ -16,3 +16,4 @@ scipy==1.5.4
 tqdm==4.57.0
 memoization==0.3.2
 func-timeout==4.3.5
+flask-cors

@@ -138,7 +138,8 @@ function upload(frame){
     formdata.append("browser_id", browser_id);
     
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', window.location.origin + '/frame', true);
+    // xhr.open('POST', window.location.origin + '/frame', true);
+    xhr.open('POST', 'https://sudokuapp-jy7atdmmqq-ew.a.run.app' + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
