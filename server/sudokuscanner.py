@@ -113,18 +113,14 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     # time.sleep(2)
 
     # client.registerFrame(frame_id)
-    combinedDigits, background, solved = findSudoku(gray, border)
+    combinedDigits, background, currentFrameSolved = findSudoku(gray, border)
 
-    if solved:
+    if currentFrameSolved or not client.solved:
         client.savedOutput = combinedDigits
         client.backgroundForOutput = background
         client.solved = True
         client.reclassify = False
     else:
-        if not client.solved:
-            client.savedOutput = combinedDigits
-            client.backgroundForOutput = background
-
         client.reclassify = True
 
 
@@ -187,10 +183,14 @@ def getSolution(browser_id):
         background = cv2.cvtColor(client.backgroundForOutput, cv2.COLOR_GRAY2RGB)
 
         background = imutils.resize(background, width=297)
+        
+        savedOutput = client.savedOutput
 
-        print(client.savedOutput.shape, client.backgroundForOutput.shape)
+        # print(np.matrix(savedOutput))
 
-        outputImage = cv2.add(np.uint8(client.savedOutput), np.uint8(background))
+        print(savedOutput.shape, background.shape)
+
+        outputImage = cv2.add(np.uint8(savedOutput), np.uint8(background))
         return outputImage
     except Exception as e:
         print(e)

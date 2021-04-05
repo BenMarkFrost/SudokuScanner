@@ -34,7 +34,7 @@ def frame():
 
             browser_id = request.form.get("solutionRequest")
 
-            print("Solution request for " + str(browser_id))
+            print("Solution request for browser " + str(browser_id))
 
             solution = sudokuscanner.getSolution(browser_id)
 

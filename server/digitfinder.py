@@ -199,8 +199,8 @@ def renderDigits(digits, width, sudoku):
         for digit in row:
             if digit == 0:
                 digit = ""
-            bg = renderIndividualDigit(digit, width, colour)
-            tempRow.append(bg)
+            renderedDigit = renderIndividualDigit(digit, width, colour)
+            tempRow.append(renderedDigit)
         rendered.append(tempRow)
     
     return rendered

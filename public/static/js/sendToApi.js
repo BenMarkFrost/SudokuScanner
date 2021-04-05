@@ -165,7 +165,7 @@ function upload(frame){
         }
     };
     
-    if (Object.keys(latencyTracker).length < 20 || stalled) {
+    if (Object.keys(frameBuffer).length < 20 || stalled) {
         xhr.send(formdata);
         console.log("Sending " + frame_id);
         latencyTracker[frame_id] = Date.now();
@@ -173,9 +173,20 @@ function upload(frame){
     } else {
         console.error("Waiting on more than 20 frames...")
         stalled = true;
+        hideDownloadButton();
         frameBuffer = {};
         latencyTracker = {};
     }
+}
+
+function hideDownloadButton(){
+
+    if (solutionImage.img == null){
+        progressParagraph.innerHTML = outputText = ""
+        saveBtn.hidden = true
+        solvedImage = false;
+    }
+
 }
 
 function toAPI(canvas){
