@@ -27,7 +27,7 @@ let stalledNum = 0;
 let debug = false;
 let domain;
 
-if (debug){
+if (debug == true){
     domain = window.location.origin;
 } else{
     domain = 'https://sudokuapp-jy7atdmmqq-ew.a.run.app';
