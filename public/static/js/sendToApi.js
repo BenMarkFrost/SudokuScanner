@@ -7,6 +7,8 @@ let latencyParagraph = document.getElementById("latency");
 let timeTakenParagraph = document.getElementById("timeTaken");
 let progressParagraph = document.getElementById("progress");
 let saveBtn = document.getElementById("saveBtn");
+let metricsDiv = document.getElementById("metricsDiv");
+let metricsBtn = document.getElementById("metricsDropDownBtn");
 let best = 1000000;
 let worst = 0;
 let tempFrame;
@@ -17,6 +19,8 @@ let solvedImage = false;
 let solutionImage = {img: null, timeReceived: 0};
 let stalled = false;
 let stalledNum = 0;
+
+let cloudRunDomain = 'https://sudokuapp-jy7atdmmqq-ew.a.run.app';
 
 //TODO only play frames once API response received
 
@@ -83,7 +87,7 @@ function displayLatency(id){
     // console.log(sum);
 
     // console.log(rollingAverageTracker)
-    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms total latency. Worst: " + worst + ", best: " + best;
+    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms round trip latency. Worst: " + worst + ", best: " + best;
 
 }
 
@@ -108,7 +112,7 @@ function displaySolutionProgress(calculated){
 
             solvedImage = true;
 
-            progressParagraph.innerHTML = outputText = "Sudoku solution has been found, click here to download: "
+            progressParagraph.innerHTML = outputText = "<b>Sudoku solution has been found, click here to download: <b>"
             saveBtn.hidden = false
         }
     }
@@ -139,7 +143,7 @@ function upload(frame){
     
     let xhr = new XMLHttpRequest();
     // xhr.open('POST', window.location.origin + '/frame', true);
-    xhr.open('POST', 'https://sudokuapp-jy7atdmmqq-ew.a.run.app' + '/frame', true);
+    xhr.open('POST', cloudRunDomain + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
@@ -227,7 +231,7 @@ function requestSolutionImage(){
     formdata.append("solutionRequest", browser_id);
     
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', window.location.origin + '/frame', true);
+    xhr.open('POST', cloudRunDomain + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
@@ -271,6 +275,22 @@ function downloadSolution(){
         console.log("saving image");
 
         downloadURI(solutionImage.img, "sudokuSolution.jpg");
+    }
+
+}
+
+function toggleMetrics(){
+
+    console.log("Clicked toggle metrics")
+
+    
+
+    if (metricsDiv.hidden == true){
+        metricsDiv.hidden = false;
+        metricsBtn.innerHTML = "Hide debug metrics";
+    } else {
+        metricsDiv.hidden = true;
+        metricsBtn.innerHTML = "Show debug metrics";
     }
 
 }
