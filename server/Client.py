@@ -13,17 +13,18 @@ class Client:
         self.browser_id = browser_id
 
     def registerFrame(self, frame_id):
-        print("registering : ", self.frames, frame_id, self.browser_id)
-        self.frames.append(frame_id)
+        print(self.frames, "registering ", "frame_id: ", frame_id, " from client with browser_id: ", self.browser_id)
+        self.frames.append(int(frame_id))
     
     def deregisterFrame(self, frame_id):
-        print("removing: ", self.frames, frame_id, self.browser_id)
-        self.frames.remove(frame_id)
+        print(self.frames, "removing ", "frame_id: ", frame_id, " from client with browser_id: ", self.browser_id)
+        self.frames.remove(int(frame_id))
 
     def isNext(self, frame_id):
-        print("next is: ", min(self.frames), self.browser_id)
+        nextFrame = min(self.frames)
+        print("next is: ", "frame_id: ", nextFrame, " from client with browser_id: ", self.browser_id)
         try:
-            return frame_id == min(self.frames)
+            return int(frame_id) == nextFrame
         except:
             return True
 

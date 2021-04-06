@@ -139,11 +139,12 @@ function upload(frame){
     }
 
     if (stalled == true){
-        console.log("Stalled - Waiting for server to start");
         if (stalledNum < 100){
+            console.log("Stalled - Waiting for server to start");
             stalledNum = stalledNum + 1;
             return
         } else {
+            console.log("Connected to server");
             stalledNum = 0
         }
     }

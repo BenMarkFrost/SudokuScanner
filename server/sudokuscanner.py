@@ -69,14 +69,13 @@ def manageClients(gray, border, frame_id, browser_id):
 
         client = Client(browser_id)
 
-        # client = cacheClient(client, frame_id, gray, border)
-        client.lastClassificationTime = current_milli_time()
-        clientsDict[browser_id] = client
-        thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
-        thread.start()
-        # thread.join()
+        # client.lastClassificationTime = current_milli_time()
+        # clientsDict[browser_id] = client
+        # thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+        # thread.start()
 
         print("New client: " + str(browser_id))
+
 
     else:
         client = clientsDict[browser_id]
@@ -91,15 +90,20 @@ def manageClients(gray, border, frame_id, browser_id):
         elif timeSinceClassification < 1000 and client.solved == True and client.reclassify == False:
             return client.savedOutput, False, False
 
-        else:
-            # client = cacheClient(client, frame_id, gray, border)
-            client.lastClassificationTime = current_milli_time()
-            clientsDict[browser_id] = client
-            thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
-            thread.start()
-            # thread.join()
+        # else:
+        #     # client = cacheClient(client, frame_id, gray, border)
+        #     client.lastClassificationTime = current_milli_time()
+        #     clientsDict[browser_id] = client
+        #     thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+        #     thread.start()
+        #     # thread.join()
 
-    print("read threadded frame for " + str(frame_id))
+    client.lastClassificationTime = current_milli_time()
+    clientsDict[browser_id] = client
+    thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+    thread.start()
+
+    print("read threaded frame for " + str(frame_id))
     
     return client.savedOutput, client.solved, True
 
@@ -109,8 +113,6 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     print("started threaded frame for " + str(frame_id))
 
     global clientsDict
-
-    # time.sleep(2)
 
     # client.registerFrame(frame_id)
     combinedDigits, background, currentFrameSolved = findSudoku(gray, border)
@@ -123,15 +125,10 @@ def cacheClient(client, browser_id, frame_id, gray, border):
     else:
         client.reclassify = True
 
-
-
-    # if client.solved or client.savedOutput is None:
-    #     client.savedOutput = combinedDigits
-
     # for i in range(5):
     #     if client.isNext(frame_id):
     #         break
-    #     print("WAITING, I'm: ", frame_id)
+    #     print("Waiting, I'm: ", frame_id)
     #     time.sleep(0.05)
     #     if i == 5:
     #         print("Gave up waiting ", frame_id)
@@ -142,7 +139,7 @@ def cacheClient(client, browser_id, frame_id, gray, border):
 
     clientsDict[browser_id] = client
 
-    print("written threadded frame for " + str(frame_id))
+    print("written threaded frame for " + str(frame_id))
     
 
 

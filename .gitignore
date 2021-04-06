@@ -3,3 +3,4 @@ cache
 .vscode
 .firebase
 __pycache__
+server/__pycache__
