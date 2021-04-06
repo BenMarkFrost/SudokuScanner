@@ -18,7 +18,7 @@ sys.path.append('../')
 
 app = Flask(__name__, 
             static_url_path='', 
-            static_folder='public/static',
+            static_folder='public',
             template_folder='public/templates')
 
 cors = CORS(app)

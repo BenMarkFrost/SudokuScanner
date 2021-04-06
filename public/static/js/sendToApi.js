@@ -9,6 +9,9 @@ let progressParagraph = document.getElementById("progress");
 let saveBtn = document.getElementById("saveBtn");
 let metricsDiv = document.getElementById("metricsDiv");
 let metricsBtn = document.getElementById("metricsDropDownBtn");
+let streamDiv = document.getElementById("streamDiv");
+let startBtn = document.getElementById("startBtn");
+let infoDiv = document.getElementById("infoDiv");
 let best = 1000000;
 let worst = 0;
 let tempFrame;
@@ -87,7 +90,7 @@ function displayLatency(id){
     // console.log(sum);
 
     // console.log(rollingAverageTracker)
-    latencyParagraph.innerHTML = "Frame " + id + ": " + latency + "ms round trip latency. Worst: " + worst + ", best: " + best;
+    latencyParagraph.innerHTML = "Frame " + id + "<br>" + latency + "ms round trip latency. Worst: " + worst + ", best: " + best;
 
 }
 
@@ -292,5 +295,16 @@ function toggleMetrics(){
         metricsDiv.hidden = true;
         metricsBtn.innerHTML = "Show debug metrics";
     }
+
+}
+
+function startStreaming(){
+
+    infoDiv.hidden = true;
+    startBtn.hidden = true
+    streamDiv.hidden = false;
+    metricsBtn.hidden = false;
+
+    runWebcamCapture();
 
 }

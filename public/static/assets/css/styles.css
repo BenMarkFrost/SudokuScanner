@@ -1,0 +1,22 @@
+#videoInput {
+
+    z-index: 1;
+    position: absolute;
+
+}
+
+#video {
+
+    z-index: 2;
+    position: absolute;
+
+}
+
+#image {
+
+    z-index: 3;
+    position: relative;
+    /* background-blend-mode: screen; */
+    mix-blend-mode: screen;
+
+}

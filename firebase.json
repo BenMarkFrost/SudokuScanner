@@ -19,14 +19,14 @@
       {
       "source": "/",
       "destination":"/templates/index.html"
-      },
-      {
-      "source": "**",
-        "run": {
-        "serviceId": "sudokuapp",
-        "region": "europe-west1"
-        }
       }
+      // {
+      // "source": "**",
+      //   "run": {
+      //   "serviceId": "sudokuapp",
+      //   "region": "europe-west1"
+      //   }
+      // }
     ]
   }
 }

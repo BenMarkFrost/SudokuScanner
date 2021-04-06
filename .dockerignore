@@ -1,3 +1,5 @@
 __pycache__
 .github
 .vscode
+.firebase
+node_modules

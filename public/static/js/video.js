@@ -4,6 +4,7 @@ let video = document.getElementById("videoInput");
 let mobile = Boolean;
 mobile = false;
 let editableStream;
+let loaded = false;
 
 if( /Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
     console.log("Mobile")
@@ -21,6 +22,10 @@ function sleep(ms) {
 }
 
 async function runWebcamCapture() {
+
+    while (!(loaded = true)){
+        await sleep(50);
+    }
 
     navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', frameRate: 15}, audio: false })
         .then(function(stream) {
@@ -80,7 +85,8 @@ async function runWebcamCapture() {
 
 window.addEventListener('load', function () {
     console.log("Loaded");
-    runWebcamCapture();
+    // runWebcamCapture();
+    loaded = true;
     // setTimeout(runWebcamCapture, 3000);
 })
 
