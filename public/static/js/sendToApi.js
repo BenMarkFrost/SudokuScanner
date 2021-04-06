@@ -139,13 +139,19 @@ function upload(frame){
     }
 
     if (stalled == true){
-        // console.log("stalled");
+        console.log("Stalled - Waiting for server to start");
         if (stalledNum < 100){
             stalledNum = stalledNum + 1;
             return
         } else {
             stalledNum = 0
         }
+    }
+
+    if (firstMessage == true){
+        // console.log("first message")
+        stalled = true;
+        firstMessage = false;
     }
 
     frame_id = frame_id + 1;
@@ -163,11 +169,6 @@ function upload(frame){
         if (this.status === 200) {
             // let response = JSON.parse(this.response);
             // console.log(response);
-
-            if (firstMessage == true){
-                stalled = true;
-                firstMessage = false;
-            }
 
             solutionImg = urlCreator.createObjectURL(this.response);
 
@@ -197,6 +198,10 @@ function upload(frame){
     } else {
         console.error("Waiting on more than 20 frames...")
         stalled = true;
+        loadingGif.hidden = false;
+        gifAttribute.hidden = false;
+        originalImg.hidden = true;
+        responseImg.hidden = true;
         hideDownloadButton();
         frameBuffer = {};
         latencyTracker = {};
@@ -207,6 +212,8 @@ function responseReceived(){
 
     gifAttribute.hidden = true;
     loadingGif.hidden = true;
+    originalImg.hidden = false;
+    responseImg.hidden = false;
 
 }
 

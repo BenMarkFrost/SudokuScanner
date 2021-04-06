@@ -46,7 +46,6 @@ def runApp():
 
         # cv2.putText(output, str(solved), (10,52), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1, cv2.LINE_AA)
 
-
         cv2.imshow("output", output)
 
 

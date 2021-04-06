@@ -40,7 +40,7 @@ def startRecordedScan(img):
 
     saveResult(stop-start, frame.calculated)
 
-    return frame.outputImage, solved
+    return frame.outputImage
 
 
 
