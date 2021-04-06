@@ -159,7 +159,7 @@ def findSudoku(gray, border):
 
     isItSudoku = False
 
-    if solvedSudoku is None:
+    if solvedSudoku is None or list(solvedSudoku[0][0:5]) == [1,2,3,4,5]:
         solvedSudoku = toNumbers
     else:
         isItSudoku = True

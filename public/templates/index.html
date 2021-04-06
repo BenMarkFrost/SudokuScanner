@@ -27,10 +27,6 @@
                 <p class="text-center" id="latency"></p>
                 <p class="text-center" id="timeTaken"></p>
             </div>
-            <div style="text-align: center;" style="margin-top: 30px;">
-                <p class="text-center" id="progress"></p>
-                <button class="text-center btn btn-success" id="saveBtn" onclick="downloadSolution()" hidden>Save Solution</button>
-            </div>
         </div>
     </section>
     <div>
@@ -44,8 +40,14 @@
                         <video hidden id="videoInput"></video><canvas hidden id="canvasInput"></canvas>
                         <img id="video" style="max-width:100%; max-height:100%;"/>
                         <img id="image" style="max-width:100%; max-height:100%;"/>
+                        <img id="loadingGif" src="static/assets/gif/backtrackingCompressedV1.gif" style="max-width:100%; max-height:100%;" hidden>
                     </div>
+                    <p class="text-center" style="text-align: center; margin-top: 30px;" id="gifAttribute" hidden>By Simpsons contributor - Program written in Java, letter images made in Photoshop, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=29034832</p>
                 </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;" class="img-fluid d-flex justify-content-center align-items-center align-content-center align-self-center">
+                <p class="text-center" id="progress"></p>
+                <button class="text-center btn btn-success" id="saveBtn" onclick="downloadSolution()" hidden>Save Solution</button>
             </div>
         </div>
     </div>

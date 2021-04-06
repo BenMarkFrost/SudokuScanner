@@ -12,6 +12,7 @@ let metricsBtn = document.getElementById("metricsDropDownBtn");
 let streamDiv = document.getElementById("streamDiv");
 let startBtn = document.getElementById("startBtn");
 let infoDiv = document.getElementById("infoDiv");
+let gifAttribute = document.getElementById("gifAttribute");
 let best = 1000000;
 let worst = 0;
 let tempFrame;
@@ -23,7 +24,15 @@ let solutionImage = {img: null, timeReceived: 0};
 let stalled = false;
 let stalledNum = 0;
 
-let cloudRunDomain = 'https://sudokuapp-jy7atdmmqq-ew.a.run.app';
+let debug = true;
+let domain;
+
+if (debug){
+    domain = window.location.origin;
+} else{
+    domain = 'https://sudokuapp-jy7atdmmqq-ew.a.run.app';
+}
+
 
 //TODO only play frames once API response received
 
@@ -47,7 +56,7 @@ function displayLatency(id){
         tempFrame = urlCreator.createObjectURL(frame);
 
         if (synced){
-            document.querySelector("#video").src = tempFrame;
+            originalImg.src = tempFrame;
         }
 
         // data.push(tempFrame);
@@ -125,7 +134,7 @@ function upload(frame){
 
     if (!synced){
         tempFrame = urlCreator.createObjectURL(frame);
-        document.querySelector("#video").src = tempFrame;
+        originalImg.src = tempFrame;
     }
 
     if (stalled == true){
@@ -146,7 +155,7 @@ function upload(frame){
     
     let xhr = new XMLHttpRequest();
     // xhr.open('POST', window.location.origin + '/frame', true);
-    xhr.open('POST', cloudRunDomain + '/frame', true);
+    xhr.open('POST', domain + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
@@ -156,9 +165,10 @@ function upload(frame){
 
             solutionImg = urlCreator.createObjectURL(this.response);
 
-            document.querySelector("#image").src = solutionImg;
+            responseImg.src = solutionImg;
             
-            // Do I need 'x-'?
+            responseReceived();
+
             displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
 
             displayTimeTaken(xhr.getResponseHeader("x-timeTaken"));
@@ -185,6 +195,13 @@ function upload(frame){
         frameBuffer = {};
         latencyTracker = {};
     }
+}
+
+function responseReceived(){
+
+    gifAttribute.hidden = true;
+    loadingGif.hidden = true;
+
 }
 
 function hideDownloadButton(){
@@ -234,7 +251,7 @@ function requestSolutionImage(){
     formdata.append("solutionRequest", browser_id);
     
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', cloudRunDomain + '/frame', true);
+    xhr.open('POST', domain + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
@@ -300,7 +317,6 @@ function toggleMetrics(){
 
 function startStreaming(){
 
-    infoDiv.hidden = true;
     startBtn.hidden = true
     streamDiv.hidden = false;
     metricsBtn.hidden = false;

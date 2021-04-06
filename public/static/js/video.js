@@ -1,6 +1,9 @@
 //import cv from "opencv.js";
 
 let video = document.getElementById("videoInput");
+let originalImg = document.getElementById("video");
+let responseImg = document.getElementById("image");
+let loadingGif = document.getElementById("loadingGif");
 let mobile = Boolean;
 mobile = false;
 let editableStream;
@@ -26,6 +29,11 @@ async function runWebcamCapture() {
     while (!(loaded = true)){
         await sleep(50);
     }
+
+
+    gifAttribute.hidden = false;
+    loadingGif.hidden = false;
+    // originalImg.src = "static/assets/gif/Sudoku_solved_by_bactracking.gif";
 
     navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment', frameRate: 15}, audio: false })
         .then(function(stream) {
