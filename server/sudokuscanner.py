@@ -155,11 +155,14 @@ def findSudoku(gray, border):
 
     toNumbers = digitfinder.classifyDigits(digits)
 
+    # print(np.matrix(toNumbers))
+    # or list(solvedSudoku[0][0:5]) == [1,2,3,4,5]
+
     solvedSudoku = sudokusolver.solve(toNumbers)
 
     isItSudoku = False
 
-    if solvedSudoku is None or list(solvedSudoku[0][0:5]) == [1,2,3,4,5]:
+    if solvedSudoku is None:
         solvedSudoku = toNumbers
     else:
         isItSudoku = True

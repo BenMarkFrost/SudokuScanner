@@ -23,8 +23,9 @@ let solvedImage = false;
 let solutionImage = {img: null, timeReceived: 0};
 let stalled = false;
 let stalledNum = 0;
+let firstMessage = true;
 
-let debug = false;
+let debug = true;
 let domain;
 
 if (debug == true){
@@ -162,6 +163,11 @@ function upload(frame){
         if (this.status === 200) {
             // let response = JSON.parse(this.response);
             // console.log(response);
+
+            if (firstMessage == true){
+                stalled = true;
+                firstMessage = false;
+            }
 
             solutionImg = urlCreator.createObjectURL(this.response);
 
