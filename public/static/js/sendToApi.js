@@ -24,7 +24,7 @@ let solutionImage = {img: null, timeReceived: 0};
 let stalled = false;
 let stalledNum = 0;
 
-let debug = true;
+let debug = false;
 let domain;
 
 if (debug){
