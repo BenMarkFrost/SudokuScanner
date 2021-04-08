@@ -15,6 +15,7 @@ import pandas as pd
 from func_timeout import func_set_timeout
 from threading import Thread
 import time
+from func_timeout import FunctionTimedOut
 
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
@@ -129,13 +130,34 @@ def findSudoku(frame):
 
     toNumbers = digitfinder.classifyDigits(digits)
 
-    solvedSudoku = sudokusolver.solve(toNumbers)
+    # No easy way to do comparisons on arrays   
+    # print(str(solvedSudoku[0][0:5]))
+    # if str(solvedSudoku[0][0:9]) == str(np.arange(1,10)):
+    #     print(np.matrix(toNumbers))
+
+
+    if np.count_nonzero(toNumbers) > 17:
+
+        try:
+
+            solvedSudoku = sudokusolver.solve(toNumbers)
+
+        except FunctionTimedOut:
+
+            print("Sudoku solve timed out")
+            solvedSudoku = None
+    
+    else:
+
+        print("Too few digits recognised")
+        solvedSudoku = None
+
 
     isItSudoku = False
 
     if solvedSudoku is None:
         solvedSudoku = toNumbers
-    else:
+    else:        
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 

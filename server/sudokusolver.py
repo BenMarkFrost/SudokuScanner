@@ -1,30 +1,23 @@
 import numpy as np
 from memoization import cached
-from func_timeout import func_set_timeout, FunctionTimedOut
+from func_timeout import func_set_timeout
 
 # Make this object oriented?
 # Everything needs to be local due to concurrency
 
+@func_set_timeout(0.5)
 @cached(max_size=128)
 def solve(sudoku):
 
     # print(np.matrix(sudoku))
 
-    try:
-
-        solution = calculateSolution(np.array(sudoku))
-    
-    except FunctionTimedOut:
-
-        # print(e)
-        return None
+    solution = calculateSolution(np.array(sudoku))
 
     # print("Solution: ")
     # print(solution)
 
     return solution
 
-@func_set_timeout(0.5)
 def calculateSolution(sudoku):
 
     # print(sudoku)
