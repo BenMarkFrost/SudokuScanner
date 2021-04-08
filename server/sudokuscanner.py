@@ -98,9 +98,10 @@ def manageClients(frame, client):
     thread = Thread(target = cacheClient, args = (frame, client))
     thread.start()
 
-    # print("read threaded frame for " + str(frame.frame_id))
-
     frame.solutionFrame = True
+
+    print("returning saved output for " + str(frame.frame_id))
+
 
 
 def cacheClient(frame, client):
@@ -212,13 +213,12 @@ def frameBuffer(frame, client):
 
     for i in range(5):
         if client.isNext(frame.frame_id):
-            # print("Frame released after waiting", i, "times")
             break
         print("Waiting, I'm: ", frame.frame_id)
-        time.sleep(0.05)
         if i == 5:
             print("Gave up waiting ", frame.frame_id)
             break
+        time.sleep(0.05)
 
 left = cv2.imread("IMG_2511.JPG")
 img = imutils.resize(left, 640)
