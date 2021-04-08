@@ -60,7 +60,6 @@ def frame():
         browser_id = request.form.get("browser_id")
         img = Image.open(request.files['frame'])
 
-
         img = np.array(img)
 
         frame = sudokuscanner.scan(browser_id, img, frame_id)
@@ -73,7 +72,7 @@ def frame():
 
         returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
         returnFile.headers["x-filename"] = frame.frame_id
-        returnFile.headers["x-timeTaken"] = frame.timeTaken
+        returnFile.headers["x-timeTaken"] = frame.timeTaken()
         returnFile.headers["x-solution"] = str(frame.solutionFrame)
 
         return returnFile

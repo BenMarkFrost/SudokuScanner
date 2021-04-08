@@ -144,6 +144,8 @@ def findSudoku(frame):
 
         except FunctionTimedOut:
 
+            # print(np.matrix(toNumbers))
+
             print("Sudoku solve timed out")
             solvedSudoku = None
     
