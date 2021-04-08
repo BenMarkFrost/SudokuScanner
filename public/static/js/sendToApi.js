@@ -144,13 +144,11 @@ function upload(frame){
             stalledNum = stalledNum + 1;
             return
         } else {
-            console.log("Connected to server");
             stalledNum = 0
         }
     }
 
     if (firstMessage == true){
-        // console.log("first message")
         stalled = true;
         firstMessage = false;
     }
@@ -174,16 +172,19 @@ function upload(frame){
             solutionImg = urlCreator.createObjectURL(this.response);
 
             responseImg.src = solutionImg;
+
+            if (stalled == false){
+                displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
+
+                displayTimeTaken(xhr.getResponseHeader("x-timeTaken"));
+
+                displaySolutionProgress(xhr.getResponseHeader("x-solution"));
+            } else {
+                stalled = false
+                responseReceived();
+            }
+
             
-            responseReceived();
-
-            displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
-
-            displayTimeTaken(xhr.getResponseHeader("x-timeTaken"));
-
-            displaySolutionProgress(xhr.getResponseHeader("x-solution"));
-
-            stalled = false
 
         }
         else{
@@ -210,6 +211,8 @@ function upload(frame){
 }
 
 function responseReceived(){
+
+    console.log("Connected to server");
 
     gifAttribute.hidden = true;
     loadingGif.hidden = true;

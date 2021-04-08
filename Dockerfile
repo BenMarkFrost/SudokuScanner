@@ -16,4 +16,4 @@ ENV PORT=5000
 
 EXPOSE 5000
 
-CMD ["python3", "app.py"]
+CMD ["python3", "-u", "app.py"]

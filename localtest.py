@@ -19,23 +19,23 @@ def runApp():
             recordSpeed.finish()
             break
 
-        ret, frame = camera.read()
+        ret, img = camera.read()
 
         startTime = current_milli_time()
 
         # response = sudokuscanner.scan(frame, 2)
 
-        response = recordSpeed.startRecordedScan(frame)
+        response = recordSpeed.startRecordedScan(img)
 
         endTime = current_milli_time()
 
-        frame = np.uint8(frame)
+        img = np.uint8(img)
 
-        response = np.uint8(frame)
+        response = np.uint8(response)
 
         # print(frame.shape, response.shape)
 
-        output = cv2.add(frame, response)
+        output = cv2.add(img, response)
 
         operationTime = endTime - startTime
 

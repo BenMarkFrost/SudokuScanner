@@ -31,8 +31,7 @@ def startRecordedScan(img):
 
     start = time.time()
 
-    frame = Frame(img, num)
-    frame = sudokuscanner.scan(2, frame)
+    frame = sudokuscanner.scan(2, img, num)
     
     num = num + 1
 

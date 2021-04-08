@@ -60,29 +60,10 @@ def frame():
         browser_id = request.form.get("browser_id")
         img = Image.open(request.files['frame'])
 
-        # print(browser_id)
 
         img = np.array(img)
 
-        frame = Frame(img, frame_id)
-
-        # try:
-
-        #     outputImage, calculated = sudokuscanner.scan(frame, browser_id, frame_id)
-        
-        # except FunctionTimedOut:
-        #     print("sudokuscanner timed out")
-        #     outputImage = np.zeros(img.shape)
-        #     calculated = False
-
-        frame = sudokuscanner.scan(browser_id, frame)
-
-        # outputImage = np.zeros(frame.shape)
-
-        # print(frame)
-
-        # print(frame.solutionFrame)
-
+        frame = sudokuscanner.scan(browser_id, img, frame_id)
 
         # Cite this
         imgIO = BytesIO()

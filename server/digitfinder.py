@@ -318,6 +318,7 @@ def calculateThreshold(img):
 
     return threshold, gray
 
+
 def findContours(img):
 
     # Research different options for parameters here
@@ -329,7 +330,7 @@ def findContours(img):
 
     biggestContour = None
 
-    if (cv2.contourArea(contours[0]) < 40000): return None
+    if (len(contours) == 0) or (cv2.contourArea(contours[0]) < 40000): return None
 
     for c in contours:
 

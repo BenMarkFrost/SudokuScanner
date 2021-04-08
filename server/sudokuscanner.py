@@ -30,130 +30,104 @@ clientsDict = {}
 
 
 # @func_set_timeout(0.3)
-def scan(browser_id, frame):
+def scan(browser_id, img, frame_id):
 
-    startTime = current_milli_time()
+    global clientsDict
+
+    try:
+        client = clientsDict[browser_id]
+    
+    except:
+
+        client = Client(browser_id)
+        clientsDict[browser_id] = client
+        print("New client: " + str(browser_id))
+    
+
+    frame = Frame(img, frame_id)
+
+    frame.startTime = current_milli_time()
+
+    client.registerFrame(frame.frame_id)
+
+    
+
+    # Analysis
 
     frame.thresh, frame.gray = digitfinder.calculateThreshold(frame.img)
 
-    try: 
-        frame.border = digitfinder.findContours(frame.thresh)
-    except:
-        pass
-
+    frame.border = digitfinder.findContours(frame.thresh)
+    
     if frame.border is None:
         frame.outputImage = np.zeros(frame.img.shape)
-        endTime = current_milli_time()
-        frame.timeTaken = endTime - startTime
+        frame.endTime = current_milli_time()
+        frameBuffer(frame, client)
+        client.deregisterFrame(frame.frame_id)
         return frame
-
-    frame.combinedDigits, frame.solutionFrame, frame.calculated = manageClients(frame.gray, frame.border, frame.frame_id, browser_id)
-
-    # print(str(solved))
+        
+    manageClients(frame, client)
 
     frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
     frame.outputImage = digitfinder.combineBorderAndImg(frame.border, frame.skewedSolution)
 
-    endTime = current_milli_time()
-    frame.timeTaken = endTime - startTime
+    frame.endTime = current_milli_time()
+
+    frameBuffer(frame, client)
+
+    client.deregisterFrame(frame.frame_id)
 
     return frame
 
 
-def manageClients(gray, border, frame_id, browser_id):
+def manageClients(frame, client):
 
     global clientsDict
+    
+    timeSinceClassification = current_milli_time() - client.lastClassificationTime
 
-    if browser_id not in clientsDict:
+    # print("Time since last " + str(timeSinceClassification))
 
-        client = Client(browser_id)
+    frame.combinedDigits = client.savedOutput
 
-        # client.lastClassificationTime = current_milli_time()
-        # clientsDict[browser_id] = client
-        # thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
-        # thread.start()
-
-        print("New client: " + str(browser_id))
-
-
-    else:
-        client = clientsDict[browser_id]
-        
-        timeSinceClassification = current_milli_time() - client.lastClassificationTime
-
-        # print("Time since last " + str(timeSinceClassification))
-
-        if timeSinceClassification < 200:
-            return client.savedOutput, False, False
-
-        elif timeSinceClassification < 1000 and client.solved == True and client.reclassify == False:
-            return client.savedOutput, False, False
-
-        # else:
-        #     # client = cacheClient(client, frame_id, gray, border)
-        #     client.lastClassificationTime = current_milli_time()
-        #     clientsDict[browser_id] = client
-        #     thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
-        #     thread.start()
-        #     # thread.join()
+    if (timeSinceClassification < 200) or (timeSinceClassification < 1000 and client.solved == True and client.reclassify == False):
+        return
 
     client.lastClassificationTime = current_milli_time()
-    clientsDict[browser_id] = client
-    thread = Thread(target = cacheClient, args = (client, browser_id, frame_id, gray, border))
+    thread = Thread(target = cacheClient, args = (frame, client))
     thread.start()
 
-    print("read threaded frame for " + str(frame_id))
-    
-    return client.savedOutput, client.solved, True
+    # print("read threaded frame for " + str(frame.frame_id))
+
+    frame.solutionFrame = True
 
 
-def cacheClient(client, browser_id, frame_id, gray, border):
-
-    print("started threaded frame for " + str(frame_id))
+def cacheClient(frame, client):
 
     global clientsDict
 
-    # client.registerFrame(frame_id)
-    combinedDigits, background, currentFrameSolved = findSudoku(gray, border)
+    print("started threaded frame for " + str(frame.frame_id))
+
+    combinedDigits, background, currentFrameSolved = findSudoku(frame)
 
     if currentFrameSolved or not client.solved:
         client.savedOutput = combinedDigits
         client.backgroundForOutput = background
         client.solved = True
-        client.reclassify = False
-    else:
-        client.reclassify = True
+    
+    client.reclassify = not currentFrameSolved
 
-    # for i in range(5):
-    #     if client.isNext(frame_id):
-    #         break
-    #     print("Waiting, I'm: ", frame_id)
-    #     time.sleep(0.05)
-    #     if i == 5:
-    #         print("Gave up waiting ", frame_id)
-    #         break
-
-    # client.deregisterFrame(frame_id)
-    # client.lastClassificationTime = current_milli_time()
-
-    clientsDict[browser_id] = client
-
-    print("written threaded frame for " + str(frame_id))
+    print("written threaded frame for " + str(frame.frame_id))
     
 
 
-
-def findSudoku(gray, border):
+def findSudoku(frame):
     
-    dimg = digitfinder.dewarp(gray, border)
+    dewarpedimg = digitfinder.dewarp(frame.gray, frame.border)
 
-    digits = digitfinder.splitByDigits(dimg)
+    digits = digitfinder.splitByDigits(dewarpedimg)
 
     toNumbers = digitfinder.classifyDigits(digits)
-
-    # print(np.matrix(toNumbers))
-    # or list(solvedSudoku[0][0:5]) == [1,2,3,4,5]
 
     solvedSudoku = sudokusolver.solve(toNumbers)
 
@@ -165,13 +139,13 @@ def findSudoku(gray, border):
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 
-    (w,h) = dimg.shape
+    (w,h) = dewarpedimg.shape
     width = int(h / 9.0)
     renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
 
     combinedDigits = digitfinder.combineDigits(renderedDigits)
 
-    return combinedDigits, dimg, isItSudoku
+    return combinedDigits, dewarpedimg, isItSudoku
 
 
 def getSolution(browser_id):
@@ -210,9 +184,18 @@ def getSolution(browser_id):
 #     df = df.astype('int64')
 #     df.to_csv(directory)
 
+def frameBuffer(frame, client):
 
-
+    for i in range(5):
+        if client.isNext(frame.frame_id):
+            # print("Frame released after waiting", i, "times")
+            break
+        print("Waiting, I'm: ", frame.frame_id)
+        time.sleep(0.05)
+        if i == 5:
+            print("Gave up waiting ", frame.frame_id)
+            break
 
 left = cv2.imread("IMG_2511.JPG")
-frame = Frame(imutils.resize(left, 640), 1)
-scan(1, frame)
+img = imutils.resize(left, 640)
+scan(1, img, 1)
