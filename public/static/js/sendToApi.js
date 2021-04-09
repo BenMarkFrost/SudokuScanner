@@ -25,7 +25,7 @@ let stalled = false;
 let stalledNum = 0;
 let firstMessage = true;
 
-let debug = true;
+let debug = false;
 let domain;
 
 if (debug == true){
