@@ -6,6 +6,7 @@ class Frame:
     calculated = False
     solutionFrame = False
     combinedDigits = None
+    digits = None
     startTime = 0
     endTime = 0
 

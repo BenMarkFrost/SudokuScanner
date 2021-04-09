@@ -110,24 +110,34 @@ def cacheClient(frame, client):
 
     print("started threaded frame for " + str(frame.frame_id))
 
-    combinedDigits, background, currentFrameSolved = findSudoku(frame)
+    digits, combinedDigits, background, currentFrameSolved = findSudoku(frame)
 
-    if currentFrameSolved or not client.solved:
+    if currentFrameSolved:
+        print("Replacing image")
         client.savedOutput = combinedDigits
         client.backgroundForOutput = background
         client.solved = True
+    elif not client.solved:
+        print("Replacing image")
+        client.savedOutput = combinedDigits
+        client.backgroundForOutput = background
+
     
     client.reclassify = not currentFrameSolved
+
+    frame.digits = digits
 
     print("written threaded frame for " + str(frame.frame_id))
     
 
 
 def findSudoku(frame):
-    
+
     dewarpedimg = digitfinder.dewarp(frame.gray, frame.border)
 
     digits = digitfinder.splitByDigits(dewarpedimg)
+
+    # print(np.array(digits).shape)
 
     toNumbers = digitfinder.classifyDigits(digits)
 
@@ -137,15 +147,16 @@ def findSudoku(frame):
     #     print(np.matrix(toNumbers))
 
 
-    if np.count_nonzero(toNumbers) > 17:
+    if np.count_nonzero(toNumbers) > 16:
+        print("Attempting solve with", np.count_nonzero(toNumbers), "numbers in puzzle")
 
         try:
 
-            solvedSudoku = sudokusolver.solve(toNumbers)
+            solvedSudoku = sudokusolver.solveSudoku(toNumbers)
+
+            print(sudokusolver.solveSudoku.cache_info())
 
         except FunctionTimedOut:
-
-            # print(np.matrix(toNumbers))
 
             print("Sudoku solve timed out")
             solvedSudoku = None
@@ -155,12 +166,15 @@ def findSudoku(frame):
         print("Too few digits recognised")
         solvedSudoku = None
 
+    # print(np.matrix(toNumbers))
+
 
     isItSudoku = False
 
     if solvedSudoku is None:
         solvedSudoku = toNumbers
     else:        
+        # print(np.matrix(solvedSudoku))
         isItSudoku = True
         solvedSudoku = np.subtract(solvedSudoku, toNumbers)
 
@@ -170,7 +184,9 @@ def findSudoku(frame):
 
     combinedDigits = digitfinder.combineDigits(renderedDigits)
 
-    return combinedDigits, dewarpedimg, isItSudoku
+    # digitfinder.saveImg("digits", combinedDigits)
+
+    return digits, combinedDigits, dewarpedimg, isItSudoku
 
 
 def getSolution(browser_id):
@@ -185,41 +201,27 @@ def getSolution(browser_id):
         
         savedOutput = client.savedOutput
 
-        # print(np.matrix(savedOutput))
-
-        print(savedOutput.shape, background.shape)
-
         outputImage = cv2.add(np.uint8(savedOutput), np.uint8(background))
         return outputImage
     except Exception as e:
         print(e)
         return np.zeros((300,300,3))
 
-
-# def saveResult(timeTaken):
-
-#     global df
-
-#     row = pd.DataFrame([[timeTaken]], columns=['0'])
-
-#     # print(row)
-
-#     df = df.append(row, ignore_index=True)
-
-#     df = df.astype('int64')
-#     df.to_csv(directory)
-
 def frameBuffer(frame, client):
 
     for i in range(5):
         if client.isNext(frame.frame_id):
+            if (i > 0):
+                print(frame.frame_id, "released")
             break
         print("Waiting, I'm: ", frame.frame_id)
         if i == 5:
             print("Gave up waiting ", frame.frame_id)
             break
+        # Sleep for 50ms
         time.sleep(0.05)
 
 left = cv2.imread("IMG_2511.JPG")
+new = imutils.resize(cv2.imread("IMG_2832.JPG"), 640)
 img = imutils.resize(left, 640)
 scan(1, img, 1)

@@ -1,10 +1,11 @@
 import cv2
 import time
-from server import sudokuscanner
-from server.Frame import Frame
+from server import sudokuscanner, digitfinder
+# from server.Frame import Frame
 import imutils
 import pandas as pd
 import time
+import numpy as np
 # import sys
 # sys.path.append('../')
 
@@ -13,7 +14,7 @@ def current_milli_time():
     return round(time.time() * 1000)
 
 right = cv2.imread("IMG_2511.JPG")
-left = cv2.imread("IMG_2489.JPG")
+new = imutils.resize(cv2.imread("IMG_2832.JPG"), 640)
 num = 1
 
 directory = "server/speedTestResults/ThreadingAndCompression.csv"
@@ -42,8 +43,23 @@ def startRecordedScan(img):
     return frame.outputImage
 
 
+def oneImage():
 
+    start = time.time()
 
+    result = sudokuscanner.scan(2, new, 1)
+
+    stop = time.time()
+
+    time.sleep(3)
+
+    result = sudokuscanner.scan(2, new, 1)
+
+    print(stop - start)
+
+    digitfinder.saveImg("imageTest", cv2.add(np.uint8(result.outputImage), np.uint8(new)), 1)
+
+oneImage()
 
 def saveResult(timeTaken, calculating):
 

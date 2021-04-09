@@ -8,12 +8,17 @@ import time
 import pandas as pd
 import os
 import math
+# import tensorflow as tf
+import keras
 from pathlib import Path
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-# import tensorflow as tf
-import keras
+
+
+
+directory = "cache/"
+highestNumber = {}
 
 model = keras.models.load_model("model/digitModel10.h5")
 
@@ -87,9 +92,14 @@ def cleanDigit(digit):
 
     # threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
 
+    # cv2.imshow("digit", np.uint8(digit))
+    # cv2.waitKey(0)
+
     threshold = cv2.threshold(digit, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
-    cleaned = clear_border(threshold)
+    cleaned = clear_border(threshold)    
+
+    # print(np.matrix(cleaned))
 
     contours = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
@@ -119,28 +129,39 @@ def cleanDigit(digit):
     
 
 
-def saveImg(folder, img, fileName):
-    directory = "cache/"
-    num = 0
+def saveImg(folder, img):
 
-    generatedPath = ""
+    global highestNumber
+    
+    if folder in highestNumber:
+        # print("Folder has highest file num")
+        num = highestNumber[folder]
+    else:
+        print("Adding new folder to dict")
+        num = 0
 
-    if fileName is None:
-        while True:
-            generatedPath = directory + folder + "/" + folder + str(num) + ".jpg"
-            myFile = Path(generatedPath)
-            if myFile.is_file():
-                num = num + 1
-            else:
-                break
-    else: 
-        while True:
-            generatedPath = directory + folder + "/" + folder + str(fileName) + str(num) + ".jpg"
-            myFile = Path(generatedPath)
-            if myFile.is_file():
-                num = num + 1
-            else:
-                break
+    generatedPath = ""  
+
+    while True:
+        generatedPath = directory + folder + "/" + folder + str(num) + ".jpg"
+        myFile = Path(generatedPath)
+        if myFile.is_file():
+            num = num + 1
+        else:
+            break
+
+    highestNumber[folder] = num
+        
+    # if fileName is None:
+        
+    # else: 
+    #     while True:
+    #         generatedPath = directory + folder + "/" + folder + str(fileName) + str(num) + ".jpg"
+    #         myFile = Path(generatedPath)
+    #         if myFile.is_file():
+    #             num = num + 1
+    #         else:
+    #             break
 
     cv2.imwrite(generatedPath, img)
     print("writing to " + generatedPath)
@@ -154,7 +175,7 @@ def dewarp(img, border):
 
     dewarp = cv2.resize(dewarp, (size, size))
 
-    # cv2.imshow("deskewed", puzzle)
+    # cv2.imshow("deskewed", dewarp)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
@@ -228,13 +249,14 @@ def classifyDigits(digits):
     for row in digits:
         for digit in row:
             if digit is not None:
-                digit = np.uint8(digit)
+                # saveImg("digits", digit*255)
+                tempDigit = np.uint8(digit)
                 # print(digit.shape)
                 # cv2.imshow("digit", digit*255)
                 # cv2.waitKey(0)
-                digit = cv2.resize(digit, (33,33))
-                digit = digit.reshape(1,33,33,1)
-                resizedDigits.append(digit)
+                tempDigit = cv2.resize(tempDigit, (33,33))
+                tempDigit = tempDigit.reshape(1,33,33,1)
+                resizedDigits.append(tempDigit)
 
     if len(resizedDigits) > 0:
 
@@ -280,6 +302,8 @@ def classifyDigits(digits):
                 tempRow.append(0)
         toNumbers.append(tempRow)
 
+
+    # print(np.matrix(np.array(toNumbers)))
     return toNumbers
 
 
@@ -312,9 +336,9 @@ def combineDigits(digits):
 def calculateThreshold(img):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5,5), 0)
+    blurred = cv2.GaussianBlur(gray, (3,3), 0)
 
-    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
+    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 1)
 
     return threshold, gray
 
@@ -342,6 +366,9 @@ def findContours(img):
             break
 
     # print(cv2.contourArea(biggestContour))
+
+    if biggestContour is None: 
+        return None
 
     return biggestContour.reshape(4,2)
 

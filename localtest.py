@@ -3,16 +3,22 @@ import sys
 # sys.path.append('../')
 # sys.path.insert(1, '../')
 # from server import sudokuscanner
-from tests import recordSpeed
+# from tests import recordSpeed
+from server import sudokuscanner, digitfinder
 import time
 import numpy as np
 
 print("running")
 
+num = 0
+
 camera = cv2.VideoCapture(0)
 
 
 def runApp():
+
+    global num
+
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -23,11 +29,19 @@ def runApp():
 
         startTime = current_milli_time()
 
-        # response = sudokuscanner.scan(frame, 2)
-
-        response = recordSpeed.startRecordedScan(img)
+        frame = sudokuscanner.scan(2, img, num)
 
         endTime = current_milli_time()
+
+
+        num = num + 1
+
+        # print(frame.outputImage.shape, frame.thresh.shape)
+
+        response = frame.outputImage
+
+        # response = recordSpeed.startRecordedScan(img)
+
 
         img = np.uint8(img)
 
@@ -36,6 +50,16 @@ def runApp():
         # print(frame.shape, response.shape)
 
         output = cv2.add(img, response)
+
+        output = np.hstack((output, cv2.cvtColor(frame.thresh, cv2.COLOR_GRAY2BGR)))
+
+        # print(frame.digits.shape)
+
+        if frame.digits is not None:
+            print("Digits exists")
+            # combinedDigits = cv2.cvtColor(digitfinder.combineDigits(frame.digits), cv2.COLOR_GRAY2BGR)
+
+
 
         operationTime = endTime - startTime
 
