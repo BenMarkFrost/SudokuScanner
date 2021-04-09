@@ -16,6 +16,9 @@ from func_timeout import func_set_timeout
 from threading import Thread
 import time
 from func_timeout import FunctionTimedOut
+import copy
+
+
 
 
 # directory = "server/speedTestResults/videoScanSpeeds.csv"
@@ -141,6 +144,11 @@ def findSudoku(frame):
 
     toNumbers = digitfinder.classifyDigits(digits)
 
+    # print(np.matrix(toNumbers))
+
+    originals = copy.deepcopy(toNumbers)
+
+
     # No easy way to do comparisons on arrays   
     # print(str(solvedSudoku[0][0:5]))
     # if str(solvedSudoku[0][0:9]) == str(np.arange(1,10)):
@@ -152,9 +160,31 @@ def findSudoku(frame):
 
         try:
 
-            solvedSudoku = sudokusolver.solveSudoku(toNumbers)
+            # print(np.matrix(np.array(toNumbers)))
 
-            print(sudokusolver.solveSudoku.cache_info())
+            # solvedSudoku = sudokusolver.solve(toNumbers)
+
+            # print(np.matrix(np.array(solvedSudoku)))
+
+
+            # print(np.matrix(toNumbers))
+
+            # puzzle = Sudoku(3,3, board=toNumbers)
+            # print(puzzle)
+            # solution = puzzle.solve()
+
+            # print(type(toNumbers[0][0]))
+
+            solvedSudoku = sudokusolver.solve(toNumbers)
+
+            print(sudokusolver.solve.cache_info())
+
+
+            # print(np.matrix(solvedSudoku))
+
+            # print(np.matrix(solution.board))
+
+            # solvedSudoku = solution.board
 
         except FunctionTimedOut:
 
@@ -166,7 +196,8 @@ def findSudoku(frame):
         print("Too few digits recognised")
         solvedSudoku = None
 
-    # print(np.matrix(toNumbers))
+    # print(np.matrix(solvedSudoku))
+    # print(np.matrix(originals))
 
 
     isItSudoku = False
@@ -176,7 +207,9 @@ def findSudoku(frame):
     else:        
         # print(np.matrix(solvedSudoku))
         isItSudoku = True
-        solvedSudoku = np.subtract(solvedSudoku, toNumbers)
+        # solvedSudoku = np.uint8(np.array(solvedSudoku))
+        # originals = np.uint8(np.array(originals))
+        solvedSudoku = np.subtract(solvedSudoku, originals)
 
     (w,h) = dewarpedimg.shape
     width = int(h / 9.0)
