@@ -77,7 +77,7 @@ def scan(browser_id, img, frame_id):
 
     frame.endTime = current_milli_time()
 
-    frameBuffer(frame, client)
+    # frameBuffer(frame, client)
 
     client.deregisterFrame(frame.frame_id)
 
