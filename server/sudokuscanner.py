@@ -65,7 +65,7 @@ def scan(browser_id, img, frame_id):
     if frame.border is None:
         frame.outputImage = np.zeros(frame.img.shape)
         frame.endTime = current_milli_time()
-        frameBuffer(frame, client)
+        # frameBuffer(frame, client)
         client.deregisterFrame(frame.frame_id)
         return frame
         
