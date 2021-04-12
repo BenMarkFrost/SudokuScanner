@@ -60,12 +60,15 @@ def scan(browser_id, img, frame_id):
 
     frame.thresh, frame.gray = digitfinder.calculateThreshold(frame.img)
 
+    digitfinder.saveImg("imageTest", frame.thresh)
+
+
     frame.border = digitfinder.findContours(frame.thresh)
     
     if frame.border is None:
         frame.outputImage = np.zeros(frame.img.shape)
         frame.endTime = current_milli_time()
-        # frameBuffer(frame, client)
+        frameBuffer(frame, client)
         client.deregisterFrame(frame.frame_id)
         return frame
         
@@ -77,7 +80,7 @@ def scan(browser_id, img, frame_id):
 
     frame.endTime = current_milli_time()
 
-    # frameBuffer(frame, client)
+    frameBuffer(frame, client)
 
     client.deregisterFrame(frame.frame_id)
 
@@ -94,16 +97,16 @@ def manageClients(frame, client):
 
     frame.combinedDigits = client.savedOutput
 
-    if (timeSinceClassification < 200) or (timeSinceClassification < 1000 and client.solved == True and client.reclassify == False):
+    if (timeSinceClassification < 500) or (timeSinceClassification < 1000 and client.solved == True and client.reclassify == False):
         return
 
     client.lastClassificationTime = current_milli_time()
-    thread = Thread(target = cacheClient, args = (frame, client))
+    thread = Thread(target = cacheClient, args = (frame, client), daemon=True)
     thread.start()
 
     frame.solutionFrame = True
 
-    print("returning saved output for " + str(frame.frame_id))
+    # print("returning saved output for " + str(frame.frame_id))
 
 
 
@@ -130,6 +133,11 @@ def cacheClient(frame, client):
 
     frame.digits = digits
 
+    # time.sleep(3)
+
+    client.lastClassificationTime = current_milli_time()
+
+
     print("written threaded frame for " + str(frame.frame_id))
     
 
@@ -143,7 +151,7 @@ def findSudoku(frame):
     # print(np.array(digits).shape)
 
     toNumbers = digitfinder.classifyDigits(digits)
-
+    
     # print(np.matrix(toNumbers))
 
     originals = copy.deepcopy(toNumbers)
@@ -177,7 +185,7 @@ def findSudoku(frame):
 
             solvedSudoku = sudokusolver.solve(toNumbers)
 
-            print(sudokusolver.solve.cache_info())
+            print("Sudoku solver:", sudokusolver.solve.cache_info())
 
 
             # print(np.matrix(solvedSudoku))
@@ -202,20 +210,28 @@ def findSudoku(frame):
 
     isItSudoku = False
 
-    if solvedSudoku is None:
-        solvedSudoku = toNumbers
-    else:        
-        # print(np.matrix(solvedSudoku))
-        isItSudoku = True
-        # solvedSudoku = np.uint8(np.array(solvedSudoku))
-        # originals = np.uint8(np.array(originals))
+    # if solvedSudoku is None:
+    #     solvedSudoku = toNumbers
+    # else:
+    #     # print(np.matrix(solvedSudoku))
+    #     isItSudoku = True
+    #     # solvedSudoku = np.uint8(np.array(solvedSudoku))
+    #     # originals = np.uint8(np.array(originals))
+    #     solvedSudoku = np.subtract(solvedSudoku, originals)
+
+    try:
         solvedSudoku = np.subtract(solvedSudoku, originals)
+        isItSudoku = True
+    except:
+        solvedSudoku = toNumbers
+        
+
 
     (w,h) = dewarpedimg.shape
     width = int(h / 9.0)
-    renderedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
+    combinedDigits = digitfinder.renderDigits(solvedSudoku, width, isItSudoku)
 
-    combinedDigits = digitfinder.combineDigits(renderedDigits)
+    print("Digit renderer:", digitfinder.renderDigits.cache_info())
 
     # digitfinder.saveImg("digits", combinedDigits)
 
@@ -225,31 +241,36 @@ def findSudoku(frame):
 def getSolution(browser_id):
     global clientsDict
 
+    solutionOutputSize = 600
+
     try:
         client = clientsDict[browser_id]
 
         background = cv2.cvtColor(client.backgroundForOutput, cv2.COLOR_GRAY2RGB)
 
-        background = imutils.resize(background, width=297)
-        
         savedOutput = client.savedOutput
 
+        # background = imutils.resize(background, width=297)
+
         outputImage = cv2.add(np.uint8(savedOutput), np.uint8(background))
+
+        outputImage = imutils.resize(outputImage, width=solutionOutputSize)
+
         return outputImage
     except Exception as e:
         print(e)
-        return np.zeros((300,300,3))
+        return np.zeros((solutionOutputSize,solutionOutputSize,3))
 
 def frameBuffer(frame, client):
 
     for i in range(5):
-        if client.isNext(frame.frame_id):
+        earliestFrame = client.next()
+        if int(earliestFrame) == int(frame.frame_id):
             if (i > 0):
                 print(frame.frame_id, "released")
             break
-        print("Waiting, I'm: ", frame.frame_id)
-        if i == 5:
-            print("Gave up waiting ", frame.frame_id)
+        print("Waiting for " + str(earliestFrame), ", I'm: ", frame.frame_id)
+        if i == 4:
             break
         # Sleep for 50ms
         time.sleep(0.05)

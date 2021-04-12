@@ -75,6 +75,8 @@ def frame():
         returnFile.headers["x-timeTaken"] = frame.timeTaken()
         returnFile.headers["x-solution"] = str(frame.solutionFrame)
 
+        #cv2.add(np.uint8(frame.img), np.uint8(frame.outputImage))
+
         return returnFile
 
     except Exception as e:

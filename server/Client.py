@@ -20,13 +20,10 @@ class Client:
         self.frames.remove(int(frame_id))
         # print(self.frames, "removing ", "frame_id: ", frame_id, " from client with browser_id: ", self.browser_id)
 
-    def isNext(self, frame_id):
+    def next(self):
         nextFrame = min(self.frames)
         # print("next is: ", "frame_id: ", nextFrame, " from client with browser_id: ", self.browser_id)
-        try:
-            return int(frame_id) == nextFrame
-        except:
-            return True
+        return nextFrame
 
     def purgeBefore(self, frame_id):
         print(self.frames)

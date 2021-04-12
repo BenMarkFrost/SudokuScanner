@@ -4,6 +4,8 @@ from sudoku import Sudoku
 import time
 import numpy as np
 from memoization import cached
+from func_timeout import func_set_timeout
+
 
 # def findNextCellToFill(grid, i, j):
 #         for x in range(i,9):
@@ -59,7 +61,7 @@ from memoization import cached
 #     [0,9,0,0,0,0,4,0,0]]
 
 
-# @func_set_timeout(2)
+@func_set_timeout(2.5)
 @cached(max_size=128, thread_safe=True)
 def solve(sudoku):
     start = time.time()

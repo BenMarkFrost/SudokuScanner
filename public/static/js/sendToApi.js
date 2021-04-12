@@ -25,7 +25,7 @@ let stalled = false;
 let stalledNum = 0;
 let firstMessage = true;
 
-let debug = false;
+let debug = true;
 let domain;
 
 if (debug == true){
@@ -63,6 +63,7 @@ function displayLatency(id){
         // data.push(tempFrame);
 
     } catch (error) {
+        console.error("Frame returned after being deleted from buffer");
         console.error(error);
     }
 
@@ -192,21 +193,24 @@ function upload(frame){
         }
     };
     
-    if (Object.keys(frameBuffer).length < 20 || stalled) {
+    if (Object.keys(frameBuffer).length < 100 || stalled) {
         xhr.send(formdata);
         console.log("Sending " + frame_id);
         latencyTracker[frame_id] = Date.now();
         frameBuffer[frame_id] = frame;
     } else {
-        console.error("Waiting on more than 20 frames...")
+        console.error("Waiting on more than 100 frames...")
         stalled = true;
         loadingGif.hidden = false;
         gifAttribute.hidden = false;
         originalImg.hidden = true;
         responseImg.hidden = true;
         hideDownloadButton();
-        frameBuffer = {};
-        latencyTracker = {};
+        if (Object.keys(frameBuffer).length > 100){
+            frameBuffer = {};
+            latencyTracker = {};
+        }
+        
     }
 }
 

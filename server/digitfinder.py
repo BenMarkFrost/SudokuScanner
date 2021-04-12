@@ -11,6 +11,8 @@ import math
 # import tensorflow as tf
 import keras
 from pathlib import Path
+from memoization import cached
+
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
@@ -97,7 +99,7 @@ def cleanDigit(digit):
 
     threshold = cv2.threshold(digit, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
-    cleaned = clear_border(threshold)    
+    cleaned = clear_border(threshold)
 
     # print(np.matrix(cleaned))
 
@@ -121,7 +123,7 @@ def cleanDigit(digit):
     else:
         cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
         
-        # saveImg("Digits", cleaned)
+        # saveImg("digits", cleaned)
 
         cleaned = np.rint(cleaned / 255).astype(int)
 
@@ -207,6 +209,8 @@ def warp(img, toWarp, border):
     return dst
 
 
+
+@cached(max_size=128, thread_safe=True)
 def renderDigits(digits, width, sudoku):
 
     rendered = []
@@ -224,6 +228,8 @@ def renderDigits(digits, width, sudoku):
             tempRow.append(renderedDigit)
         rendered.append(tempRow)
     
+    rendered = combineDigits(rendered)
+
     return rendered
             
 
@@ -331,14 +337,18 @@ def combineDigits(digits):
 
     # saveImg("output", combineDigits, "savedImage")
 
+    combineDigits = imutils.resize(combineDigits, width=300)
+
     return combineDigits
 
 def calculateThreshold(img):
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (3,3), 0)
+    blurred = cv2.GaussianBlur(gray, (7,7), 0)
 
-    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 1.5)
+    # saveImg("imageTest", blurred)
+
+    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, 2)
 
     return threshold, gray
 
