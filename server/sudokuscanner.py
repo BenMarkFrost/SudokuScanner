@@ -60,7 +60,7 @@ def scan(browser_id, img, frame_id):
 
     frame.thresh, frame.gray = digitfinder.calculateThreshold(frame.img)
 
-    digitfinder.saveImg("imageTest", frame.thresh)
+    # digitfinder.saveImg("imageTest", frame.thresh)
 
 
     frame.border = digitfinder.findContours(frame.thresh)

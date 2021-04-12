@@ -37,25 +37,6 @@ def root():
 def frame():
     try:
 
-        if request.form.get("solutionRequest"):
-
-            browser_id = request.form.get("solutionRequest")
-
-            print("Solution request for browser " + str(browser_id))
-
-            solution = sudokuscanner.getSolution(browser_id)
-
-            imgIO = BytesIO()
-            pilImg = Image.fromarray(solution.astype(np.uint8))
-            pilImg.save(imgIO, 'JPEG', quality=100)
-            imgIO.seek(0)
-
-            returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
-
-            return returnFile
-            
-
-
         frame_id = request.form.get("id")
         browser_id = request.form.get("browser_id")
         img = Image.open(request.files['frame'])
@@ -83,5 +64,24 @@ def frame():
         print("Post /frame error: " + str(e))
         return e
 
+
+@app.route('/solution', methods=['POST'])
+@cross_origin()
+def solution():
+    
+    browser_id = request.form.get("solutionRequest")
+
+    print("Solution request for browser " + str(browser_id))
+
+    solution = sudokuscanner.getSolution(browser_id)
+
+    imgIO = BytesIO()
+    pilImg = Image.fromarray(solution.astype(np.uint8))
+    pilImg.save(imgIO, 'JPEG', quality=100)
+    imgIO.seek(0)
+
+    returnFile = make_response(send_file(imgIO, mimetype='img/jpeg'))
+
+    return returnFile
 
 app.run(host='0.0.0.0', threaded=True)

@@ -206,10 +206,8 @@ function upload(frame){
         originalImg.hidden = true;
         responseImg.hidden = true;
         hideDownloadButton();
-        if (Object.keys(frameBuffer).length > 100){
-            frameBuffer = {};
-            latencyTracker = {};
-        }
+        frameBuffer = {};
+        latencyTracker = {};
         
     }
 }
@@ -272,7 +270,7 @@ function requestSolutionImage(){
     formdata.append("solutionRequest", browser_id);
     
     let xhr = new XMLHttpRequest();
-    xhr.open('POST', domain + '/frame', true);
+    xhr.open('POST', domain + '/solution', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {

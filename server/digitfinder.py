@@ -329,7 +329,7 @@ def classifyDigits(digits):
 
 def combineDigits(digits):
     rows = []
-    # concatVert = np.zeros((33,33))
+    
     for row in digits:
         rows.append(np.concatenate(row, axis=1))
     
