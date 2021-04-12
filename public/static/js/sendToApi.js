@@ -25,13 +25,13 @@ let stalled = false;
 let stalledNum = 0;
 let firstMessage = true;
 
-let debug = true;
+let debug = false;
 let domain;
 
 if (debug == true){
     domain = window.location.origin;
 } else{
-    domain = 'https://sudokuapp-jy7atdmmqq-ew.a.run.app';
+    domain = 'https://sudokuscanner-jy7atdmmqq-nw.a.run.app';
 }
 
 
