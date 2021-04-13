@@ -3,11 +3,11 @@ import numpy as np
 class Client:
 
     frames = []
-    lastClassificationTime = 10000
+    lastAnalysedTime = 10000
     browser_id = 0
     savedOutput = np.zeros((300, 300, 3))
     solved = False
-    reclassify = True
+    reAnalyse = True
 
     def __init__(self, browser_id):
         self.browser_id = browser_id

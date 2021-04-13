@@ -1,8 +1,5 @@
-from server import sudokusolver
-# from server.Sudoku import Sudoku
 from sudoku import Sudoku
 import time
-import numpy as np
 from memoization import cached
 from func_timeout import func_set_timeout
 
@@ -61,27 +58,27 @@ from func_timeout import func_set_timeout
 #     [0,9,0,0,0,0,4,0,0]]
 
 
-@func_set_timeout(2.5)
-@cached(max_size=128, thread_safe=True)
-def solve(sudoku):
-    start = time.time()
+# @func_set_timeout(2.5)
+# @cached(max_size=128, thread_safe=True)
+# def solve(sudoku):
+#     start = time.time()
 
-#     print(np.matrix(sudoku))
+# #     print(np.matrix(sudoku))
 
-    puzzle = Sudoku(3,3, board=sudoku)
-#     print(puzzle)
-    solution = puzzle.solve()
+#     puzzle = Sudoku(3,3, board=sudoku)
+# #     print(puzzle)
+#     solution = puzzle.solve()
 
-#     print(solution.show())
+# #     print(solution.show())
 
-    stop = time.time()
+#     stop = time.time()
 
-    print("Solved in:", stop-start, "seconds")
+#     print("Solved in:", stop-start, "seconds")
 
-    board = solution.board
+#     board = solution.board
 
-    if not puzzle.validate():
-        return None
+#     if not puzzle.validate():
+#         return None
 
-    return board
+#     return board
 

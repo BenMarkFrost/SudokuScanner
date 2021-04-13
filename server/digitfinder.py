@@ -1,58 +1,134 @@
-import numpy as np 
+"""
+This file contains low level functions which perform small, specific tasks on images.
+"""
+
+import numpy as np
 import imutils
 from imutils.perspective import four_point_transform
 from skimage.segmentation import clear_border
-import scipy
 import cv2
 import time
-import pandas as pd
 import os
 import math
-# import tensorflow as tf
-import keras
-from pathlib import Path
+from tensorflow import keras
 from memoization import cached
+from func_timeout import func_set_timeout
+from tests import saveImage
+from sudoku import Sudoku
 
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+# If in a GPU environment, ensure the GPU can be used.
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
-
-
-
-directory = "cache/"
-highestNumber = {}
-
+# Load the digit classification model
 model = keras.models.load_model("model/digitModel10.h5")
 
-# directory = "server/speedTestResults/GPUTimeSpeeds.csv"
-# df = pd.read_csv(directory, index_col=0)
 
-# From https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
-def current_milli_time():
-    return round(time.time() * 1000)
+"""
+CalculateThreshold() thresholds the input image to help find the border.
 
-def combineBorderAndImg(border, img):
-    # Convert border coordinates to image
+@params
+img : 3d Numpy array of shape (x,y,3)
 
-    # border = np.array(border, np.int32)
-    border = border.reshape((-1,1,2))
+@returns
+threshold: 3d Numpy array of shape (x,y,2)
+dewarp : 3d Numpy array of shape (x,y,2)
+"""
+def calculateThreshold(img):
 
-    background = np.zeros(img.shape)
+    # The code in this function has been adapted from the below link:
+    # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    # Credit to Adrian Rosebrock
+    # Despite this, the parameters of the functions have undergone significant iterations by the author for this project
 
-    cv2.polylines(background, [border], True, (0,0,255))
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (7,7), 0)
 
-    outputImage = cv2.add(np.float32(background), np.float32(img))
-    return outputImage
+    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, 2)
 
+    # End of reference
+
+    return threshold, gray
+
+
+"""
+FindContours() finds the border of the input image if one exists.
+
+@params
+img : 3d Numpy array of shape (x,y,2)
+
+@returns
+dewarp : list of ints
+"""
+def findContours(img):
+
+    # The code in this function has been adapted from the below link:
+    # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    # Credit to Adrian Rosebrock
+
+    contours = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    contours = imutils.grab_contours(contours)
+
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+
+    biggestContour = None
+
+    # This line was implemented by the author of this project
+    if (len(contours) == 0) or (cv2.contourArea(contours[0]) < 40000): return None
+
+    for c in contours:
+
+        perimeter = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.01 * perimeter, True)
+
+        if len(approx) == 4:
+            biggestContour = approx
+            break
+
+    if biggestContour is None: 
+        return None
+
+    # End of reference
+
+    return biggestContour.reshape(4,2)
+
+
+"""
+Dewarp() flattens a puzzle based on its border.
+
+@params
+img : 3d Numpy array of shape (x,y,2)
+
+@returns
+dewarp : 3d Numpy array of shape (300,300,2)
+"""
+def dewarp(img, border):
+
+    dewarp = four_point_transform(img, border)
+
+    size = 300
+
+    dewarp = cv2.resize(dewarp, (size, size))
+
+    return dewarp
+
+
+"""
+SplitByDigits() splits up and cleans an image of a sudoku into its 81 cells.
+
+@params
+img : 3d Numpy array of shape (300,300,2)
+
+@returns
+digits : list of 2D numpy arrays
+"""
 def splitByDigits(img):
     digits = []
 
     (w,h) = img.shape
-    # print("Shape: " + str(w) + " " + str(h))
 
     interval = h / 9
-
-    # print(interval)
 
     for j in range(9):
         row = []
@@ -65,43 +141,34 @@ def splitByDigits(img):
             x2 = end + math.ceil(interval)
             y2 = start + math.ceil(interval)
 
-            # print(str(x2))
-            # print(str(y2))
-
             digit = img[y1:y2, x1:x2]
 
             digit = cleanDigit(digit)
 
-            # cv2.imshow("digit", np.uint8(digit))
-            # cv2.waitKey(0)
-
-            # if digit is not None:
-            #     saveImg("IMG_2511", (digit*255))
-
             row.append(digit)
-            # digit = tempRow[start : start + interval]
         digits.append(row)
     return digits
 
+
+
+"""
+CleanDigit() performs preprocessing on individual digit images.
+
+@params
+img : 3d Numpy array of shape (33,33,2)
+
+@returns
+digits : 3d Numpy array of shape (33,33,1)
+"""
 def cleanDigit(digit):
-    
 
-    # Document how I adjusted the threshold to make it work for digits
-
-    #Different types of filtering
-    # blurred = cv2.GaussianBlur(digit, (7,7), 0)
-    # blurred = cv2.bilateralFilter(img, 9, 75, 75)
-
-    # threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 9, 2)
-
-    # cv2.imshow("digit", np.uint8(digit))
-    # cv2.waitKey(0)
+    # The code in this function has been adapted from the below link:
+    # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    # Credit to Adrian Rosebrock
 
     threshold = cv2.threshold(digit, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
     cleaned = clear_border(threshold)
-
-    # print(np.matrix(cleaned))
 
     contours = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
@@ -122,130 +189,24 @@ def cleanDigit(digit):
         return None
     else:
         cleaned = cv2.bitwise_and(cleaned, cleaned, mask=contourMask)
-        
-        # saveImg("digits", cleaned)
+    # End of reference
 
+        # Binary optimisation
         cleaned = np.rint(cleaned / 255).astype(int)
 
         return cleaned
-    
 
 
-def saveImg(folder, img):
+"""
+ClassifyDigits() classifies the digits according to a premade model.
 
-    global highestNumber
-    
-    if folder in highestNumber:
-        # print("Folder has highest file num")
-        num = highestNumber[folder]
-    else:
-        print("Adding new folder to dict")
-        num = 0
+@params
+digits : 2d list of 3d Numpy arrays of shape (33,33,1)
 
-    generatedPath = ""  
-
-    while True:
-        generatedPath = directory + folder + "/" + folder + str(num) + ".jpg"
-        myFile = Path(generatedPath)
-        if myFile.is_file():
-            num = num + 1
-        else:
-            break
-
-    highestNumber[folder] = num
-        
-    # if fileName is None:
-        
-    # else: 
-    #     while True:
-    #         generatedPath = directory + folder + "/" + folder + str(fileName) + str(num) + ".jpg"
-    #         myFile = Path(generatedPath)
-    #         if myFile.is_file():
-    #             num = num + 1
-    #         else:
-    #             break
-
-    cv2.imwrite(generatedPath, img)
-    print("writing to " + generatedPath)
-    num = num + 1
-
-def dewarp(img, border):
-
-    dewarp = four_point_transform(img, border)
-
-    size = 300
-
-    dewarp = cv2.resize(dewarp, (size, size))
-
-    # cv2.imshow("deskewed", dewarp)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    return dewarp
-
-def warp(img, toWarp, border):
-
-    rows,cols,ch = img.shape
-
-    (w,h,d) = toWarp.shape
-
-    # Border coordinates are sent in a weird order, reordering
-    border = [border[0], border[3], border[1], border[2]]
-
-    # Fixing warping bug if sudoku is tilted to the left
-    if (border[1][1] > border[2][1]):
-        border = [border[2], border[0], border[3], border[1]]
-
-    pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
-    pts2 = np.float32(border)
-
-    # @ https://www.geeksforgeeks.org/perspective-transformation-python-opencv/
-
-    matte = cv2.getPerspectiveTransform(pts1,pts2)
-    dst = cv2.warpPerspective(toWarp,matte,(cols,rows))
-
-    # overlay = cv2.add(img, dst)
-
-    return dst
-
-
-
-@cached(max_size=128, thread_safe=True)
-def renderDigits(digits, width, sudoku):
-
-    rendered = []
-    colour = (255, 255, 255)
-
-    if sudoku:
-        colour = (0,255,0)
-
-    for row in digits:
-        tempRow = []
-        for digit in row:
-            if digit == 0:
-                digit = ""
-            renderedDigit = renderIndividualDigit(digit, width, colour)
-            tempRow.append(renderedDigit)
-        rendered.append(tempRow)
-    
-    rendered = combineDigits(rendered)
-
-    return rendered
-            
-
-def renderIndividualDigit(digit, width, colour):
-    bg = np.zeros((width, width, 3))
-    if digit is not None:
-        bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colour, 2)
-    
-    # cv2.imshow("bg", bg)
-    # cv2.waitKey(0)
-
-    return bg
-
+@returns
+toNumbers : 2d list of ints
+"""
 def classifyDigits(digits):
-    # TODO find a faster CNN
-    # Hyperthread this method?
 
     global model
 
@@ -255,46 +216,17 @@ def classifyDigits(digits):
     for row in digits:
         for digit in row:
             if digit is not None:
-                # saveImg("digits", digit*255)
                 tempDigit = np.uint8(digit)
-                # print(digit.shape)
-                # cv2.imshow("digit", digit*255)
-                # cv2.waitKey(0)
                 tempDigit = cv2.resize(tempDigit, (33,33))
                 tempDigit = tempDigit.reshape(1,33,33,1)
                 resizedDigits.append(tempDigit)
 
     if len(resizedDigits) > 0:
 
-        # startTime = current_milli_time()
-
-        # print("GPU starting")
-
         results = model.predict(np.vstack(resizedDigits))
-
-        # resizedDigits = np.array(resizedDigits)
-        # resizedDigits = resizedDigits.reshape(resizedDigits.shape[0], 33, 33, 1)
-
-        # results = model.predict_on_batch(resizedDigits)
-        # print(results)
-
-        # endTime = current_milli_time()
-
-        # timeTaken = endTime - startTime
-
-        # print("GPU Time taken: " + str(timeTaken))
-
-        # saveResult(timeTaken)
 
         for result in results:
             res.append(np.argmax(result))
-
-        # savedDigits = res
-        # for i in resizedDigits:
-        #     res.append(0)
-
-    # print(res)
-
 
     toNumbers = []
 
@@ -308,25 +240,95 @@ def classifyDigits(digits):
                 tempRow.append(int(0))
         toNumbers.append(tempRow)
 
-
-    # print(np.matrix(np.array(toNumbers)))
     return toNumbers
 
 
-# def saveResult(timeTaken):
+"""
+CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
 
-#     global df
+The @cached decorator caches the input and stores the corresponding outputs.
+This reduces the number of calls made to this function.
 
-#     row = pd.DataFrame([[timeTaken]], columns=['0'])
+The @func_set_timeout decorator throws an error if the solve takes longer than 2.5 seconds.
+This prevents impossible to solve sudokus from choking the system.
 
-#     # print(row)
+@params
+sudoku : 2d list
 
-#     df = df.append(row, ignore_index=True)
+@returns
+board : 2d list
+"""
+@func_set_timeout(2.5)
+@cached(max_size=128, thread_safe=True)
+def solve(sudoku):
+    start = time.time()
 
-#     df = df.astype('int64')
-#     df.to_csv(directory)
+    puzzle = Sudoku(3,3, board=sudoku)
+    solution = puzzle.solve()
+
+    stop = time.time()
+
+    print("Solved in:", stop-start, "seconds")
+
+    board = solution.board
+
+    if not puzzle.validate():
+        return None
+
+    return board
 
 
+
+"""
+RenderDigits() writes the given digits to cells.
+The @cached decorator caches the input and stores the corresponding outputs.
+This reduces the number of calls made to this function.
+
+@params
+digits : 2d list of ints
+width : int
+sudoku : boolean
+
+@returns
+rendered : 2d list of 3d Numpy arrays of shape (33,33,3)
+"""
+@cached(max_size=128, thread_safe=True)
+def renderDigits(digits, width, solved):
+
+    colour = (255, 255, 255)
+
+    # Green text if solved
+    if solved:
+        colour = (0,255,0)
+
+    rendered = []
+
+    for row in digits:
+        tempRow = []
+        for digit in row:
+            if digit == 0:
+                digit = ""
+            bg = np.zeros((width, width, 3))
+            bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colour, 2)
+            tempRow.append(bg)
+        rendered.append(tempRow)
+    
+    rendered = combineDigits(rendered)
+
+    return rendered
+            
+
+
+
+"""
+CombineDigits() joins up given images into one image.
+
+@params
+digits : 2d list of 3d Numpy arrays of shape (33,33,3)
+
+@returns
+dst : 3d Numpy array of shape (300,300,3)
+"""
 def combineDigits(digits):
     rows = []
     
@@ -335,51 +337,81 @@ def combineDigits(digits):
     
     combineDigits = np.float32(np.concatenate(rows, axis=0))
 
-    # saveImg("output", combineDigits, "savedImage")
-
     combineDigits = imutils.resize(combineDigits, width=300)
 
     return combineDigits
 
-def calculateThreshold(img):
-
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (7,7), 0)
-
-    # saveImg("imageTest", blurred)
-
-    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, 2)
-
-    return threshold, gray
 
 
-def findContours(img):
+"""
+Warp() warps a puzzle on to the original image.
 
-    # Research different options for parameters here
-    contours = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+@params
+img : 3d Numpy array of shape (x,y,3)
+toWarp : 3d Numpy array of shape (300,300,3)
+border: list
+
+@returns
+dst : 3d Numpy array of shape (x,y,3)
+"""
+def warp(img, toWarp, border):
+
+    rows,cols,ch = img.shape
+
+    (w,h,d) = toWarp.shape
+
+    # Border coordinates are sent out of order, reordering
+    border = [border[0], border[3], border[1], border[2]]
+
+    # Fixing warping bug if sudoku is tilted to the left
+    if (border[1][1] > border[2][1]):
+        border = [border[2], border[0], border[3], border[1]]
+
+    # The following code has been adapted from the below link:
+    # https://www.geeksforgeeks.org/perspective-transformation-python-opencv/
+    # Credit to ayushmankumar7
+
+    pts1 = np.float32([[0,0], [w,0], [0,h], [w,h]])
+    pts2 = np.float32(border)
+
+    matte = cv2.getPerspectiveTransform(pts1,pts2)
+    dst = cv2.warpPerspective(toWarp,matte,(cols,rows))
+
+    # End of reference
+
+    return dst
+
+
+
+"""
+CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
+
+@params
+border : list
+img : 3d Numpy array of shape (300,300,3)
+
+@returns
+outputImage : 3d Numpy array of shape (300,300,3)
+"""
+def combineBorderAndImg(border, img):
+
+    border = border.reshape((-1,1,2))
+
+    background = np.zeros(img.shape)
+
+    # Draw the border
+    cv2.polylines(background, [border], True, (0,0,255))
+
+    # Combine the border and image
+    outputImage = cv2.add(np.float32(background), np.float32(img))
     
-    contours = imutils.grab_contours(contours)
+    return outputImage
 
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
-    biggestContour = None
 
-    if (len(contours) == 0) or (cv2.contourArea(contours[0]) < 40000): return None
-
-    for c in contours:
-
-        perimeter = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.01 * perimeter, True)
-
-        if len(approx) == 4:
-            biggestContour = approx
-            break
-
-    # print(cv2.contourArea(biggestContour))
-
-    if biggestContour is None: 
-        return None
-
-    return biggestContour.reshape(4,2)
-
-    
+# The following code for getting the current time was taken from the link below.
+# https://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python
+# Credit to Naftuli Kay
+def current_milli_time():
+    return round(time.time() * 1000)
+# End of reference
