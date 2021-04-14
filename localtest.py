@@ -27,7 +27,7 @@ def runApp():
         # Perform image Analysis
         frame = sudokuscanner.scan(2, img, frame_id)
 
-        frame_id = frame_id + 1
+        frame_id += 1
 
         # Combining the original image and the overlay generated through analysis.
         output = cv2.add(np.uint8(img), np.uint8(frame.outputImage))

@@ -11,6 +11,7 @@ import time
 from threading import Thread
 from func_timeout import FunctionTimedOut
 import copy
+import imutils
 
 
 # clientsDict is a dictionary of key value pairs comprising of the browser_id: client object.
@@ -19,18 +20,19 @@ import copy
 clientsDict = {}
 
 
-"""
-Scan() holds the main flow of the analysis and calls the other functions.
-There is one call to scan() for each frame passed into the API.
 
-@params
-browser_id, frame_id : int
-img : 3d Numpy array of shape (x,y,3)
-
-@returns
-Frame object
-"""
 def scan(browser_id, img, frame_id):
+    """
+    Scan() holds the main flow of the analysis and calls the other functions.
+    There is one call to scan() for each frame passed into the API.
+
+    @params
+    browser_id, frame_id : int
+    img : 3d Numpy array of shape (x,y,3)
+
+    @returns
+    Frame object
+    """
 
     global clientsDict
 
@@ -52,7 +54,7 @@ def scan(browser_id, img, frame_id):
 
 
     """
-    Analysis step 1 - Finding the border
+    Step 1 - Finding the border
     """
 
     frame.thresh, frame.gray = digitfinder.calculateThreshold(frame.img)
@@ -61,24 +63,21 @@ def scan(browser_id, img, frame_id):
     
     if frame.border is None:
         frame.outputImage = np.zeros(frame.img.shape)
-        frame.endTime = digitfinder.current_milli_time()
-        frameBuffer(frame, client)
-        client.deregisterFrame(frame.frame_id)
-        return frame
+    else:
+        """
+        Step 2 - Solving the sudoku
+        """
+        manageClients(frame, client)
 
-    # Only progress if a sudoku border has been found in this frame.
+        frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
-    """
-    Analysis step 2 - Solving the sudoku
-    """
-        
-    manageClients(frame, client)
-
-    frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
-
-    frame.outputImage = digitfinder.combineBorderAndImg(frame.border, frame.skewedSolution)
+        frame.outputImage = digitfinder.combineBorderAndImg(frame.border, frame.skewedSolution)
 
     frame.endTime = digitfinder.current_milli_time()
+
+    """
+    Step 3 - Waiting if neccessary
+    """
 
     frameBuffer(frame, client)
 
@@ -87,17 +86,18 @@ def scan(browser_id, img, frame_id):
     return frame
 
 
-"""
-ManageClients() is called to determine if a frame should be re-analysed.
 
-@params 
-frame : Frame object
-client : Client object
-
-@returns
-none
-"""
 def manageClients(frame, client):
+    """
+    ManageClients() is called to determine if a frame should be re-analysed.
+
+    @params 
+    frame : Frame object
+    client : Client object
+
+    @returns
+    none
+    """
 
     global clientsDict
     
@@ -121,17 +121,18 @@ def manageClients(frame, client):
 
 
 
-"""
-AnalyseFrame() is called on a thread to run and interpret the results of findSudoku().
 
-@params
-frame : Frame object
-client : Client object
-
-@returns
-none
-"""
 def analyseFrame(frame, client):
+    """
+    AnalyseFrame() is called on a thread to run and interpret the results of findSudoku().
+
+    @params
+    frame : Frame object
+    client : Client object
+
+    @returns
+    none
+    """
 
     print("Started threaded frame for " + str(frame.frame_id))
 
@@ -161,18 +162,19 @@ def analyseFrame(frame, client):
     
 
 
-"""
-FindSudoku() attempts to find a sudoku in the given frame.
 
-@params
-frame : Frame object
-
-@returns
-combinedDigits : 3d Numpy array of shape (300,300,3)
-dewarpedimg : 3d Numpy array of shape (300,300,3)
-isItSudoku : Boolean
-"""
 def findSudoku(frame):
+    """
+    FindSudoku() attempts to find a sudoku in the given frame.
+
+    @params
+    frame : Frame object
+
+    @returns
+    combinedDigits : 3d Numpy array of shape (300,300,3)
+    dewarpedimg : 3d Numpy array of shape (300,300,3)
+    isItSudoku : Boolean
+    """
 
     dewarpedimg = digitfinder.dewarp(frame.gray, frame.border)
 
@@ -219,17 +221,18 @@ def findSudoku(frame):
     return combinedDigits, dewarpedimg, isItSudoku
 
 
-"""
-FrameBuffer() holds frames in a holding loop until all frames entering the API before it have finished processing.
 
-@params
-frame : Frame object
-client : Client object
-
-@returns
-none
-"""
 def frameBuffer(frame, client):
+    """
+    FrameBuffer() holds frames in a holding loop until all frames entering the API before it have finished processing.
+
+    @params
+    frame : Frame object
+    client : Client object
+
+    @returns
+    none
+    """
 
     for i in range(5):
         earliestFrame = client.next()
@@ -240,22 +243,24 @@ def frameBuffer(frame, client):
         print(f"Waiting for {earliestFrame}, I'm: {frame.frame_id}")
         if i == 4:
             print("Gave up waiting")
+            client.purgeBefore(frame.frame_id)
             break
         # Sleep for 50ms
         time.sleep(0.05)
 
 
-"""
-GetSolution() calculates the solution to the current sudoku as a complete image to download.
-This is only called by app.py.
 
-@params
-browser_id : int
-
-@returns
-outputImage : 3d Numpy array of shape (600,600,3)
-"""
 def getSolution(browser_id):
+    """
+    GetSolution() calculates the solution to the current sudoku as a complete image to download.
+    This is only called by app.py.
+
+    @params
+    browser_id : int
+
+    @returns
+    outputImage : 3d Numpy array of shape (600,600,3)
+    """
 
     global clientsDict
 
@@ -277,3 +282,12 @@ def getSolution(browser_id):
         return np.zeros((solutionOutputSize,solutionOutputSize,3))
 
 
+
+
+# Scanning a test file at startup ensures that tensorflow is properly set up
+# This removes a delay when scanning a file for the first time in produciton.
+left = cv2.imread("IMG_2511.JPG")
+img = imutils.resize(left, 640)
+scan(1, img, 1)
+
+print("SudokuScanner started successfully")

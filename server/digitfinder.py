@@ -1,5 +1,8 @@
 """
-This file contains low level functions which perform small, specific tasks on images.
+This file contains low level functions which perform small, specific tasks 
+on images with no effect on any variables other than those they have been passed.
+
+This file is set up in the general order in which the functions are called.
 """
 
 import numpy as np
@@ -24,17 +27,17 @@ os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 model = keras.models.load_model("model/digitModel10.h5")
 
 
-"""
-CalculateThreshold() thresholds the input image to help find the border.
-
-@params
-img : 3d Numpy array of shape (x,y,3)
-
-@returns
-threshold: 3d Numpy array of shape (x,y,2)
-dewarp : 3d Numpy array of shape (x,y,2)
-"""
 def calculateThreshold(img):
+    """
+    CalculateThreshold() thresholds the input image to help find the border.
+
+    @params
+    img : 3d Numpy array of shape (x,y,3)
+
+    @returns
+    threshold: 3d Numpy array of shape (x,y,2)
+    dewarp : 3d Numpy array of shape (x,y,2)
+    """
 
     # The code in this function has been adapted from the below link:
     # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
@@ -51,16 +54,17 @@ def calculateThreshold(img):
     return threshold, gray
 
 
-"""
-FindContours() finds the border of the input image if one exists.
 
-@params
-img : 3d Numpy array of shape (x,y,2)
-
-@returns
-dewarp : list of ints
-"""
 def findContours(img):
+    """
+    FindContours() finds the border of the input image if one exists.
+
+    @params
+    img : 3d Numpy array of shape (x,y,2)
+
+    @returns
+    dewarp : list of ints
+    """
 
     # The code in this function has been adapted from the below link:
     # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
@@ -94,16 +98,17 @@ def findContours(img):
     return biggestContour.reshape(4,2)
 
 
-"""
-Dewarp() flattens a puzzle based on its border.
 
-@params
-img : 3d Numpy array of shape (x,y,2)
-
-@returns
-dewarp : 3d Numpy array of shape (300,300,2)
-"""
 def dewarp(img, border):
+    """
+    Dewarp() flattens a puzzle based on its border.
+
+    @params
+    img : 3d Numpy array of shape (x,y,2)
+
+    @returns
+    dewarp : 3d Numpy array of shape (300,300,2)
+    """
 
     dewarp = four_point_transform(img, border)
 
@@ -114,16 +119,18 @@ def dewarp(img, border):
     return dewarp
 
 
-"""
-SplitByDigits() splits up and cleans an image of a sudoku into its 81 cells.
 
-@params
-img : 3d Numpy array of shape (300,300,2)
-
-@returns
-digits : list of 2D numpy arrays
-"""
 def splitByDigits(img):
+    """
+    SplitByDigits() splits up and cleans an image of a sudoku into its 81 cells.
+
+    @params
+    img : 3d Numpy array of shape (300,300,2)
+
+    @returns
+    digits : list of 2D numpy arrays
+    """
+
     digits = []
 
     (w,h) = img.shape
@@ -151,16 +158,17 @@ def splitByDigits(img):
 
 
 
-"""
-CleanDigit() performs preprocessing on individual digit images.
 
-@params
-img : 3d Numpy array of shape (33,33,2)
-
-@returns
-digits : 3d Numpy array of shape (33,33,1)
-"""
 def cleanDigit(digit):
+    """
+    CleanDigit() performs preprocessing on individual digit images.
+
+    @params
+    img : 3d Numpy array of shape (33,33,2)
+
+    @returns
+    digits : 3d Numpy array of shape (33,33,1)
+    """
 
     # The code in this function has been adapted from the below link:
     # https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
@@ -197,16 +205,17 @@ def cleanDigit(digit):
         return cleaned
 
 
-"""
-ClassifyDigits() classifies the digits according to a premade model.
 
-@params
-digits : 2d list of 3d Numpy arrays of shape (33,33,1)
-
-@returns
-toNumbers : 2d list of ints
-"""
 def classifyDigits(digits):
+    """
+    ClassifyDigits() classifies the digits according to a premade model.
+
+    @params
+    digits : 2d list of 3d Numpy arrays of shape (33,33,1)
+
+    @returns
+    toNumbers : 2d list of ints
+    """
 
     global model
 
@@ -243,24 +252,26 @@ def classifyDigits(digits):
     return toNumbers
 
 
-"""
-CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
 
-The @cached decorator caches the input and stores the corresponding outputs.
-This reduces the number of calls made to this function.
-
-The @func_set_timeout decorator throws an error if the solve takes longer than 2.5 seconds.
-This prevents impossible to solve sudokus from choking the system.
-
-@params
-sudoku : 2d list
-
-@returns
-board : 2d list
-"""
 @func_set_timeout(2.5)
 @cached(max_size=128, thread_safe=True)
 def solve(sudoku):
+    """
+    CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
+
+    The @cached decorator caches the input and stores the corresponding outputs.
+    This reduces the number of calls made to this function.
+
+    The @func_set_timeout decorator throws an error if the solve takes longer than 2.5 seconds.
+    This prevents impossible to solve sudokus from choking the system.
+
+    @params
+    sudoku : 2d list
+
+    @returns
+    board : 2d list
+    """
+
     start = time.time()
 
     puzzle = Sudoku(3,3, board=sudoku)
@@ -279,21 +290,22 @@ def solve(sudoku):
 
 
 
-"""
-RenderDigits() writes the given digits to cells.
-The @cached decorator caches the input and stores the corresponding outputs.
-This reduces the number of calls made to this function.
 
-@params
-digits : 2d list of ints
-width : int
-sudoku : boolean
-
-@returns
-rendered : 2d list of 3d Numpy arrays of shape (33,33,3)
-"""
 @cached(max_size=128, thread_safe=True)
 def renderDigits(digits, width, solved):
+    """
+    RenderDigits() writes the given digits to cells.
+    The @cached decorator caches the input and stores the corresponding outputs.
+    This reduces the number of calls made to this function.
+
+    @params
+    digits : 2d list of ints
+    width : int
+    sudoku : boolean
+
+    @returns
+    rendered : 2d list of 3d Numpy arrays of shape (33,33,3)
+    """
 
     colour = (255, 255, 255)
 
@@ -320,16 +332,18 @@ def renderDigits(digits, width, solved):
 
 
 
-"""
-CombineDigits() joins up given images into one image.
 
-@params
-digits : 2d list of 3d Numpy arrays of shape (33,33,3)
-
-@returns
-dst : 3d Numpy array of shape (300,300,3)
-"""
 def combineDigits(digits):
+    """
+    CombineDigits() joins up given images into one image.
+
+    @params
+    digits : 2d list of 3d Numpy arrays of shape (33,33,3)
+
+    @returns
+    dst : 3d Numpy array of shape (300,300,3)
+    """
+
     rows = []
     
     for row in digits:
@@ -343,18 +357,19 @@ def combineDigits(digits):
 
 
 
-"""
-Warp() warps a puzzle on to the original image.
 
-@params
-img : 3d Numpy array of shape (x,y,3)
-toWarp : 3d Numpy array of shape (300,300,3)
-border: list
-
-@returns
-dst : 3d Numpy array of shape (x,y,3)
-"""
 def warp(img, toWarp, border):
+    """
+    Warp() warps a puzzle on to the original image.
+
+    @params
+    img : 3d Numpy array of shape (x,y,3)
+    toWarp : 3d Numpy array of shape (300,300,3)
+    border: list
+
+    @returns
+    dst : 3d Numpy array of shape (x,y,3)
+    """
 
     rows,cols,ch = img.shape
 
@@ -383,17 +398,18 @@ def warp(img, toWarp, border):
 
 
 
-"""
-CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
 
-@params
-border : list
-img : 3d Numpy array of shape (300,300,3)
-
-@returns
-outputImage : 3d Numpy array of shape (300,300,3)
-"""
 def combineBorderAndImg(border, img):
+    """
+    CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
+
+    @params
+    border : list
+    img : 3d Numpy array of shape (300,300,3)
+
+    @returns
+    outputImage : 3d Numpy array of shape (300,300,3)
+    """
 
     border = border.reshape((-1,1,2))
 

@@ -32,7 +32,7 @@ app.config['CORS_EXPOSE_HEADERS'] = ["x-filename", "x-solution", "x-timeTaken"]
 def root():
     return render_template("index.html")
 
-# This is the main API entry point
+
 @app.route('/frame', methods=['POST'])
 @cross_origin()
 def frame():

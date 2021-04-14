@@ -25,7 +25,7 @@ let stalled = false;
 let stalledNum = 0;
 let firstMessage = true;
 
-let debug = true;
+let debug = false;
 let domain;
 
 if (debug == true){
@@ -35,11 +35,7 @@ if (debug == true){
 }
 
 
-//TODO only play frames once API response received
-
 function displayLatency(id){
-
-    // TODO Display best and worst and average latencies here?
 
     let timeOfAPICall;
 
@@ -60,8 +56,6 @@ function displayLatency(id){
             originalImg.src = tempFrame;
         }
 
-        // data.push(tempFrame);
-
     } catch (error) {
         console.error("Frame returned after being deleted from buffer");
         console.error(error);
@@ -69,13 +63,11 @@ function displayLatency(id){
 
     rollingAverageTracker.push(latency)
 
-    // Can this be optimised with splicing?
     if (rollingAverageTracker.length > 10){
         rollingAverageTracker.shift()
     }
 
     let sum = 0;
-    // Make this a lambda expression?
     for (i = 0; i < rollingAverageTracker.length; i++){
         sum += rollingAverageTracker[i];
     }
@@ -98,9 +90,6 @@ function displayLatency(id){
         best = latency;
     }
 
-    // console.log(sum);
-
-    // console.log(rollingAverageTracker)
     latencyParagraph.innerHTML = "Frame " + id + "<br>" + latency + "ms round trip latency. Worst: " + worst + ", best: " + best;
 
 }

@@ -1,6 +1,8 @@
 class Frame:
 
-    # make private variables where appropriate
+    """
+    This class holds the original image and steps of analysis for a frame
+    """
 
     border = None
     calculated = False
