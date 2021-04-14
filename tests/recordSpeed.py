@@ -13,7 +13,7 @@ import numpy as np
 num = 1
 
 # Setting up output of speed test results.
-directory = "server/speedTestResults/ThreadingAndCompression.csv"
+directory = "tests/speedTestResults/WithThreadingEasy.csv"
 try:
     df = pd.read_csv(directory, index_col=0)
 except:
@@ -43,7 +43,7 @@ def startRecordedScan(img):
 
     saveResult(stop-start, frame.calculated)
 
-    return frame.outputImage
+    return frame
 
 
 def oneImage():
@@ -98,7 +98,7 @@ def saveResult(timeTaken, calculating):
     if calculating:
         tmpCalc = 1
 
-    row = pd.DataFrame([[timeTaken, tmpCalc]], columns=['time', 'calculation'])
+    row = pd.DataFrame([[timeTaken*1000, tmpCalc]], columns=['time', 'calculation'])
 
     df = df.append(row, ignore_index=True)
 

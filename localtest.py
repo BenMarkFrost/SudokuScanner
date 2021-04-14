@@ -6,6 +6,7 @@ Press 'q' to exit the window.
 
 import cv2
 from server import sudokuscanner
+from tests import recordSpeed
 import numpy as np
 
 frame_id = 0
@@ -20,6 +21,7 @@ def runApp():
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            recordSpeed.finish()
             break
 
         ret, img = camera.read()

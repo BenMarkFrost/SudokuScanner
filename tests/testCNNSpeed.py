@@ -1,3 +1,6 @@
+"""
+This file records the speed of different models for use in digit classification.
+"""
 from tensorflow import keras
 import cv2
 import numpy as np
@@ -5,13 +8,23 @@ from tqdm import tqdm
 import os
 import time
 import numpy as np
+
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 directory = "CNNTestData/FONT_HERSHEY_SIMPLEX/"
 model = keras.models.load_model("model/digitModel3.h5")
 
-
 def loadImages():
+    """
+    LoadImages() reads in a directory of images to test.
+
+    @params
+    none
+
+    @returns
+    images : list of 3d Numpy arrays of size (28,28,1)
+    """
+
     num = 0
     images = []
     

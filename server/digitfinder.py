@@ -35,8 +35,8 @@ def calculateThreshold(img):
     img : 3d Numpy array of shape (x,y,3)
 
     @returns
-    threshold: 3d Numpy array of shape (x,y,2)
-    dewarp : 3d Numpy array of shape (x,y,2)
+    threshold: 3d Numpy array of shape (x,y,1)
+    dewarp : 3d Numpy array of shape (x,y,1)
     """
 
     # The code in this function has been adapted from the below link:
@@ -60,7 +60,7 @@ def findContours(img):
     FindContours() finds the border of the input image if one exists.
 
     @params
-    img : 3d Numpy array of shape (x,y,2)
+    img : 3d Numpy array of shape (x,y,1)
 
     @returns
     dewarp : list of ints
@@ -104,10 +104,10 @@ def dewarp(img, border):
     Dewarp() flattens a puzzle based on its border.
 
     @params
-    img : 3d Numpy array of shape (x,y,2)
+    img : 3d Numpy array of shape (x,y,1)
 
     @returns
-    dewarp : 3d Numpy array of shape (300,300,2)
+    dewarp : 3d Numpy array of shape (300,300,1)
     """
 
     dewarp = four_point_transform(img, border)
@@ -125,7 +125,7 @@ def splitByDigits(img):
     SplitByDigits() splits up and cleans an image of a sudoku into its 81 cells.
 
     @params
-    img : 3d Numpy array of shape (300,300,2)
+    img : 3d Numpy array of shape (300,300,1)
 
     @returns
     digits : list of 2D numpy arrays
@@ -164,7 +164,7 @@ def cleanDigit(digit):
     CleanDigit() performs preprocessing on individual digit images.
 
     @params
-    img : 3d Numpy array of shape (33,33,2)
+    img : 3d Numpy array of shape (33,33,1)
 
     @returns
     digits : 3d Numpy array of shape (33,33,1)
@@ -253,23 +253,19 @@ def classifyDigits(digits):
 
 
 
-@func_set_timeout(2.5)
-@cached(max_size=128, thread_safe=True)
-def solve(sudoku):
+@func_set_timeout(0.1)
+def timedSolve(sudoku):
     """
-    CombineBorderAndImg() draws the identified border of the puzzle on top of the image.
+    timedSolve() solves a given sudoku puzzle with a time limit set by the timout decorator above.
 
-    The @cached decorator caches the input and stores the corresponding outputs.
-    This reduces the number of calls made to this function.
-
-    The @func_set_timeout decorator throws an error if the solve takes longer than 2.5 seconds.
+    The @func_set_timeout decorator throws an error if the solve takes longer than x seconds.
     This prevents impossible to solve sudokus from choking the system.
 
     @params
-    sudoku : 2d list
+    sudoku : 2d list of ints
 
     @returns
-    board : 2d list
+    board : 2d list of ints
     """
 
     start = time.time()
@@ -279,15 +275,35 @@ def solve(sudoku):
 
     stop = time.time()
 
+    if not puzzle.validate():
+        return None
+
     print("Solved in:", stop-start, "seconds")
 
     board = solution.board
 
-    if not puzzle.validate():
-        return None
-
     return board
 
+
+@cached(max_size=128, thread_safe=True)
+def solve(sudoku):
+    """
+    Solve() efficiently caches the results of timedSolve()
+
+    !!! This two-function setup is necessary since the caching decorator also 
+    needs to cache the error returned if timedSolve() is timed out. 
+
+    The @cached decorator caches the input and stores the corresponding outputs.
+    This reduces the number of calls made to this function.
+
+    @params
+    sudoku : 2d list of ints
+
+    @returns
+    timedSolve(sudoku) : 2d list of ints
+
+    """
+    return timedSolve(sudoku)
 
 
 
@@ -318,7 +334,7 @@ def renderDigits(digits, width, solved):
     for row in digits:
         tempRow = []
         for digit in row:
-            if digit == 0:
+            if digit == 0 or digit == None:
                 digit = ""
             bg = np.zeros((width, width, 3))
             bg = cv2.putText(bg, str(digit), (6,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, colour, 2)

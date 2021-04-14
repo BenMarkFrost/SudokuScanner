@@ -138,21 +138,17 @@ def analyseFrame(frame, client):
 
     combinedDigits, background, currentFrameSolved = findSudoku(frame)
 
-    # If analysis on this frame has resulted in a solved sudoku, 
+    # 1) If analysis on this frame has resulted in a solved sudoku, 
     # store this solution as the new saved output in the client object.
-    if currentFrameSolved:
-        print("Replacing image")
-        client.savedOutput = combinedDigits
-        client.backgroundForOutput = background
-        client.solved = True
-    # If no solution in this frame was found, but the client has never been solved,
+    # 2) If no solution in this frame was found, but the client has never been solved,
     # store this partial solution as the new saved output in the client object.
-    elif not client.solved:
+    if currentFrameSolved or not client.solved:
         print("Replacing image")
         client.savedOutput = combinedDigits
         client.backgroundForOutput = background
+    if currentFrameSolved:
+        client.solved = True
 
-    
     # Only signal that this client is in need of analysis if this frame was not solved.
     client.reAnalyse = not currentFrameSolved
 

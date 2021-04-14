@@ -1,3 +1,5 @@
+<!-- This file was created inside the Bootstrap Studio IDE for this project-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/assets/css/styles.css">
     <link rel="stylesheet" href="static/assets/css/Team-Grid.css">
+    <script type="text/javascript" src="static/js/view.js" defer></script>
     <script type="text/javascript" src="static/js/sendToApi.js" defer></script>
     <script type="text/javascript" src="static/js/video.js" defer></script>
 </head>
@@ -17,7 +20,7 @@
         <div class="container">
             <div class="intro">
                 <h2 class="text-center">SudokuScanner</h2>
-                <p class="text-center" style="margin-bottom: 30px;margin-top: 0px;">Point your camera at an unsolved sudoku and see the solution overlayed</p>
+                <p class="text-center" style="margin-bottom: 30px;margin-top: 0px;">Point your camera at an unsolved sudoku and see the solution overlayed. <br> The video will be muted and encrypted, then streamed to a server for analysis, after which it will be deleted.</p>
             </div>
             <div style="text-align: center; margin-bottom: 30px;">
                 <button hidden class="text-center btn btn-secondary btn-sm" id="metricsDropDownBtn" onclick="toggleMetrics()">Show debug metrics</button>
@@ -48,7 +51,7 @@
                         <img id="image" style="max-width:100%; max-height:100%;"/>
                         <img id="loadingGif" src="static/assets/gif/backtrackingCompressedV1.gif" style="max-width:100%; max-height:100%;" hidden>
                     </div>
-                    <p class="text-center" style="text-align: center; margin-top: 30px;" id="gifAttribute" hidden>By Simpsons contributor - Program written in Java, letter images made in Photoshop, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=29034832</p>
+                    <p class="text-center" style="text-align: center; margin-top: 30px;" id="gifAttribute" hidden>By Simpsons contributor - Program written in Java, letter images made in Photoshop, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=29034832 <br> Adapted by Benjamin Frost for SudokuScanner Individual Project</p>
                 </div>
             </div>
             <div style="text-align: center; margin-top: 30px;" class="img-fluid d-flex justify-content-center align-items-center align-content-center align-self-center">

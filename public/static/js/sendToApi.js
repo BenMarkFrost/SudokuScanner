@@ -1,126 +1,59 @@
+/*
+* This file handles the connection to the API and streaming of video data
+*/
 
-let frame_id = 0;
+// Buffers
 let frameBuffer = {};
 let latencyTracker = {};
 let rollingAverageTracker = [];
-let latencyParagraph = document.getElementById("latency");
-let timeTakenParagraph = document.getElementById("timeTaken");
-let progressParagraph = document.getElementById("progress");
-let saveBtn = document.getElementById("saveBtn");
-let metricsDiv = document.getElementById("metricsDiv");
-let metricsBtn = document.getElementById("metricsDropDownBtn");
-let streamDiv = document.getElementById("streamDiv");
-let startBtn = document.getElementById("startBtn");
-let infoDiv = document.getElementById("infoDiv");
-let gifAttribute = document.getElementById("gifAttribute");
-let best = 1000000;
-let worst = 0;
+
+// Booleans determining the state of the system
+let synced = true;
+let stalled = false;
+let firstMessage = true;
+let debug = true;
+
+// Misc variables
+let frame_id = 0;
 let tempFrame;
 var urlCreator = window.URL || window.webkitURL;
 let browser_id = Math.floor(Math.random() * 10000);
-let synced = true;
-let solvedImage = false;
 let solutionImage = {img: null, timeReceived: 0};
-let stalled = false;
 let stalledNum = 0;
-let firstMessage = true;
-
-let debug = false;
 let domain;
 
+// When debugging, use the window URL for API requests.
+// Otherwise, use CORS to access the Cloud Run instance directly.
 if (debug == true){
     domain = window.location.origin;
 } else{
     domain = 'https://sudokuscanner-jy7atdmmqq-nw.a.run.app';
 }
 
+/**
+ * This method updates the frame rate according to the latency.
+ * @param  {int} latency
+ */
+function updateFrameRate(latency){
+    let newFrameRate;
 
-function displayLatency(id){
+    if (latency < 150){
+        newFrameRate = 15
+    } else {
+        newFrameRate = 5
+    } 
 
-    let timeOfAPICall;
-
-    try{
-        timeOfAPICall = latencyTracker[id];
-        delete latencyTracker[id];
-        latency = Date.now() - timeOfAPICall;
-        console.log("Received " + id)
-
-        frame = frameBuffer[id];
-        delete frameBuffer[id];
-
-        tempFrame = urlCreator.revokeObjectURL(tempFrame)
-
-        tempFrame = urlCreator.createObjectURL(frame);
-
-        if (synced){
-            originalImg.src = tempFrame;
-        }
-
-    } catch (error) {
-        console.error("Frame returned after being deleted from buffer");
-        console.error(error);
-    }
-
-    rollingAverageTracker.push(latency)
-
-    if (rollingAverageTracker.length > 10){
-        rollingAverageTracker.shift()
-    }
-
-    let sum = 0;
-    for (i = 0; i < rollingAverageTracker.length; i++){
-        sum += rollingAverageTracker[i];
-    }
-
-    latency = Math.ceil(sum / rollingAverageTracker.length)
-
-    // tempFrameRate = 15
-
-    // if (latency < 200){
-    //     tempFrameRate = 15
-    // } else {
-    //     tempFrameRate = 5
-    // } 
-
-    // editableStream.getVideoTracks()[0].applyConstraints({frameRate: tempFrameRate});
-
-    if (latency > worst){
-        worst = latency;
-    } else if (latency < best){
-        best = latency;
-    }
-
-    latencyParagraph.innerHTML = "Frame " + id + "<br>" + latency + "ms round trip latency. Worst: " + worst + ", best: " + best;
-
-}
-
-function displayTimeTaken(timeTaken){
-
-    outputText =  "Server processing time: " + timeTaken + "ms";
-
-    timeTakenParagraph.innerHTML = outputText
-
-}
-
-function displaySolutionProgress(calculated){
-
-    // console.log("iscalculated: " + calculated);
-
-    if (solvedImage == false){
-
-        // console.log(calculated)
-        if (calculated == "True"){
-
-            console.log("Solution found");
-
-            solvedImage = true;
-
-            progressParagraph.innerHTML = outputText = "<b>Sudoku solution has been found, click here to download: <b>"
-            saveBtn.hidden = false
-        }
+    if (frameRate != newFrameRate){
+        console.log("Updating frame rate to " + newFrameRate)
+        frameRate = newFrameRate;
+        editableStream.getVideoTracks()[0].applyConstraints({frameRate: frameRate});
     }
 }
 
+/**
+ * This function handles sending frames of video to and from the API.
+ * @param  {Blob} frame
+ */
 function upload(frame){
 
     if (!synced){
@@ -138,43 +71,56 @@ function upload(frame){
         }
     }
 
+    // The default state is stalled, however this is enabled here to avoid waiting in the code above.
+    // This is since the base assusmption is that the server is running properly, and if it is not then
+    // stalled can enter its loop.
     if (firstMessage == true){
         stalled = true;
         firstMessage = false;
     }
 
+
     frame_id = frame_id + 1;
+
+    /*
+    * The following code is referenced from the below link:
+    * https://webrtchacks.com/webrtc-cv-tensorflow/
+    * Credit to Chad Hart
+    * 
+    * Despite this, significant changes have been made for this project.
+    */
     let formdata = new FormData();
     formdata.append("frame", frame);
     formdata.append("id", frame_id);
     formdata.append("browser_id", browser_id);
     
     let xhr = new XMLHttpRequest();
-    // xhr.open('POST', window.location.origin + '/frame', true);
     xhr.open('POST', domain + '/frame', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
         if (this.status === 200) {
-            // let response = JSON.parse(this.response);
-            // console.log(response);
+    // End of refrerence
 
             solutionImg = urlCreator.createObjectURL(this.response);
 
             responseImg.src = solutionImg;
 
             if (stalled == false){
-                displayLatency(xhr.getResponseHeader("x-filename"), xhr.getResponseHeader("x-timeTaken"))
+
+                response_frame_id = xhr.getResponseHeader("x-filename")
+
+                displayLatency(response_frame_id)
+                displayFrame(response_frame_id)
 
                 displayTimeTaken(xhr.getResponseHeader("x-timeTaken"));
 
                 displaySolutionProgress(xhr.getResponseHeader("x-solution"));
+
             } else {
                 stalled = false
                 responseReceived();
             }
-
-            
 
         }
         else{
@@ -201,69 +147,28 @@ function upload(frame){
     }
 }
 
-function responseReceived(){
-
-    console.log("Connected to server");
-
-    gifAttribute.hidden = true;
-    loadingGif.hidden = true;
-    originalImg.hidden = false;
-    responseImg.hidden = false;
-
-}
-
-function hideDownloadButton(){
-
-    if (solutionImage.img == null){
-        progressParagraph.innerHTML = outputText = ""
-        saveBtn.hidden = true
-        solvedImage = false;
-    }
-
-}
-
-function toAPI(canvas){
-
-    // TODO add toggle button for frame sync
-
-    // console.log("Found me");
-
-    canvas.toBlob(upload, 'image/jpeg', 0.5);
-
-    // console.log(data);
-
-}
-
-function toggleFrameSync(sw){
-
-    console.log("Frame sync: " + sw.checked);
-
-    synced = sw.checked;
-
-}
-
-// @ owencm https://stackoverflow.com/questions/3916191/download-data-url-file
-function downloadURI(uri, name) {
-    var link = document.createElement("a");
-    link.download = name;
-    link.href = uri;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    delete link;
-}
-
+/**
+ * This function handles accessing the solution image from the API.
+ */
 function requestSolutionImage(){
 
+    /*
+    * The following code is referenced from the below link:
+    * https://webrtchacks.com/webrtc-cv-tensorflow/
+    * Credit to Chad Hart
+    * 
+    * Despite this, significant changes have been made for this project.
+    */
     let formdata = new FormData();
     formdata.append("solutionRequest", browser_id);
-    
+
     let xhr = new XMLHttpRequest();
     xhr.open('POST', domain + '/solution', true);
 
     xhr.responseType = "blob";
     xhr.onload = function () {
         if (this.status === 200) {
+    // End of reference
 
             solutionImage.img = urlCreator.createObjectURL(this.response);
 
@@ -284,10 +189,12 @@ function requestSolutionImage(){
 
     xhr.send(formdata);
     saveBtn.innerHTML = "Waiting for server...";
-
-
 }
 
+
+/**
+ * This function saves the retrieved solution image to the user's device.
+ */
 function downloadSolution(){
 
     console.log("Clicked download");
@@ -307,28 +214,12 @@ function downloadSolution(){
 
 }
 
-function toggleMetrics(){
+/**
+ * This function is called per frame as the entry point to this file from video.js
+ * @param  {DOM element} canvas
+ */
+function toAPI(canvas){
 
-    console.log("Clicked toggle metrics")
-
-    
-
-    if (metricsDiv.hidden == true){
-        metricsDiv.hidden = false;
-        metricsBtn.innerHTML = "Hide debug metrics";
-    } else {
-        metricsDiv.hidden = true;
-        metricsBtn.innerHTML = "Show debug metrics";
-    }
-
-}
-
-function startStreaming(){
-
-    startBtn.hidden = true
-    streamDiv.hidden = false;
-    metricsBtn.hidden = false;
-
-    runWebcamCapture();
+    canvas.toBlob(upload, 'image/jpeg', 0.5);
 
 }
