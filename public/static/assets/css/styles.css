@@ -1,3 +1,9 @@
+/**
+This file ensures that the original frame and the response frame are 
+placed on top of each other, and the blending mode is applied so that 
+the response frame recognises black pixels as transparent.
+**/
+
 #videoInput {
 
     z-index: 1;
@@ -16,7 +22,6 @@
 
     z-index: 3;
     position: relative;
-    /* background-blend-mode: screen; */
     mix-blend-mode: screen;
 
 }
