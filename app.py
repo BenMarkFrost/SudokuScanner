@@ -101,3 +101,8 @@ def solution():
 
 # In-built Flask threading is enabled spawning a new thread for each API request
 app.run(host='0.0.0.0', threaded=True)
+
+
+left = cv2.imread("IMG_2511.JPG")
+img = imutils.resize(left, 640)
+sudokuscanner.scan(1, img, 1)
