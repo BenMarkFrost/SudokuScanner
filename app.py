@@ -12,6 +12,7 @@ from server import sudokuscanner
 from server.Frame import Frame
 from io import BytesIO
 import numpy as np
+import cv2
 
 
 app = Flask(__name__, 
@@ -99,10 +100,10 @@ def solution():
         print("Post /frame error: " + str(e))
         return e
 
-# In-built Flask threading is enabled spawning a new thread for each API request
-app.run(host='0.0.0.0', threaded=True)
-
 
 left = cv2.imread("IMG_2511.JPG")
 img = imutils.resize(left, 640)
 sudokuscanner.scan(1, img, 1)
+
+# In-built Flask threading is enabled spawning a new thread for each API request
+app.run(host='0.0.0.0', threaded=True)
