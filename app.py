@@ -16,8 +16,11 @@ import time
 import cv2
 import imutils
 
+analysisProcesses = 3
+
 if __name__ == '__main__':
-    processManager = ProcessManager(2)
+    processManager = ProcessManager(analysisProcesses)
+    print(f'Number of analysis processes: {analysisProcesses}')
 
 app = Flask(__name__, 
             static_url_path='', 
@@ -102,7 +105,7 @@ def solution():
         print(f"Solution request for browser {browser_id}")
 
         # Returns the combined solution image
-        solution = sudokuscanner.getSolution(browser_id)
+        solution = processManager.retrieveSolution(browser_id)
 
         imgIO = BytesIO()
         pilImg = Image.fromarray(solution.astype(np.uint8))
@@ -121,6 +124,7 @@ if __name__ == '__main__':
     left = cv2.imread("IMG_2511.JPG")
     img = imutils.resize(left, 640)
     processManager.startAnalysis(1, img, 1)
+
 
     # In-built Flask threading is enabled spawning a new thread for each API request
     app.run(host='0.0.0.0', threaded=True)

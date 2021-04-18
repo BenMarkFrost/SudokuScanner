@@ -7,12 +7,14 @@ from server import digitfinder
 
 class ProcessManager:
 
-    # manager = Manager()
     clientsDict = {}
     finishedFrames = {}
 
     def __init__(self, numProcesses):
         self.pool = Pool(processes=numProcesses)
+        for _ in range(numProcesses):
+            print("Loading")
+            self.pool.apply_async(sudokuscanner.load)
     
     def startAnalysis(self, browser_id, img, frame_id):
         try:
@@ -78,3 +80,6 @@ class ProcessManager:
         frame.solutionFrame = True
 
         return True
+
+    def retrieveSolution(self, browser_id):
+        return sudokuscanner.getSolution(self.clientsDict[browser_id])

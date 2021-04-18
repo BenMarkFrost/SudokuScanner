@@ -21,7 +21,7 @@ from sudoku import Sudoku
 
 
 # If in a GPU environment, ensure the GPU can be used.
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # Load the digit classification model
 model = keras.models.load_model("model/digitModel10.h5")
