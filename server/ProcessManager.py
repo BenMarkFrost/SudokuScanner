@@ -47,10 +47,34 @@ class ProcessManager:
         sudokuscanner.frameBuffer(frame, client)
         client.deregisterFrame(frame.frame_id)
         self.finishedFrames[frame.frame_id] = frame
-        if frame.solutionFrame:
+        if (frame.border is not None) and self.manageClients(frame, client):
             self.startSudokuSolve(frame, client)
 
     def getFrame(self, frame_id):
         frame = self.finishedFrames[frame_id]
         del self.finishedFrames[frame_id]
         return frame
+
+    def manageClients(self, frame, client):
+        """
+        ManageClients() is called to determine if a frame should be re-analysed.
+
+        @params 
+        frame : Frame object
+        client : Client object
+
+        @returns
+        none
+        """
+        
+        timeSinceAnalysed = digitfinder.current_milli_time() - client.lastAnalysedTime
+
+        # If it is less than 500ms since the last time a frame from this client was analysed, 
+        # or less than 1 second and a solution has already been found for that client,
+        # return the saved solution stored for that client.
+        if (timeSinceAnalysed < 500) or (timeSinceAnalysed < 1000 and client.solved == True and client.reAnalyse == False):
+            return False
+
+        frame.solutionFrame = True
+
+        return True

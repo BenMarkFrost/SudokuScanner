@@ -21,6 +21,9 @@ from multiprocessing import Process
 
 
 
+def load():
+    pass
+
 def scan(frame, client):
     """
     Scan() holds the main flow of the analysis and calls the other functions.
@@ -57,7 +60,9 @@ def scan(frame, client):
         """
         Step 2 - Solving the sudoku
         """
-        manageClients(frame, client)
+        # manageClients(frame, client)
+
+        frame.combinedDigits = client.savedOutput
 
         frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
@@ -277,4 +282,4 @@ def getSolution(browser_id):
 # img = imutils.resize(left, 640)
 # scan(1, img, 1)
 
-print("SudokuScanner started successfully")
+# print("SudokuScanner started successfully")
