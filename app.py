@@ -8,11 +8,16 @@ This file serves as the entry point to the SudokuScanner API
 from flask import Flask, request, Response, render_template, send_file, make_response
 from flask_cors import CORS, cross_origin
 from PIL import Image
-from server import sudokuscanner
+from server.ProcessManager import ProcessManager
 from server.Frame import Frame
 from io import BytesIO
 import numpy as np
+import time
+import cv2
+import imutils
 
+if __name__ == '__main__':
+    processManager = ProcessManager(2)
 
 app = Flask(__name__, 
             static_url_path='', 
@@ -46,7 +51,19 @@ def frame():
 
         # Image is handed off to the analysis code
         # Returns an instantiation of the Frame class containing all stages of analysis
-        frame = sudokuscanner.scan(browser_id, img, frame_id)
+        # frame = sudokuscanner.scan(browser_id, img, frame_id)
+
+        processManager.startAnalysis(browser_id, img, frame_id)
+        
+        frame = None
+
+        while True:
+            try:
+                frame = processManager.getFrame(frame_id)
+                # print("Frame released")
+                break
+            except:
+                time.sleep(0.05)
 
 
         # The following code for compression was taken from the below links:
@@ -99,10 +116,12 @@ def solution():
         print("Post /frame error: " + str(e))
         return e
 
-# In-built Flask threading is enabled spawning a new thread for each API request
-app.run(host='0.0.0.0', threaded=True)
+if __name__ == '__main__':
 
+    left = cv2.imread("IMG_2511.JPG")
+    img = imutils.resize(left, 640)
+    processManager.startAnalysis(1, img, 1)
 
-left = cv2.imread("IMG_2511.JPG")
-img = imutils.resize(left, 640)
-sudokuscanner.scan(1, img, 1)
+    # In-built Flask threading is enabled spawning a new thread for each API request
+    app.run(host='0.0.0.0', threaded=True)
+    

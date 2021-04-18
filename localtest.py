@@ -8,10 +8,15 @@ import cv2
 from server import sudokuscanner
 from tests import recordSpeed
 import numpy as np
+from server.ProcessManager import ProcessManager
+import time
 
 frame_id = 0
 
-camera = cv2.VideoCapture(0)
+if __name__ == '__main__':
+    camera = cv2.VideoCapture(0)
+    print("Starting manager")
+    processManager = ProcessManager(4)
 
 
 def runApp():
@@ -27,7 +32,19 @@ def runApp():
         ret, img = camera.read()
 
         # Perform image Analysis
-        frame = sudokuscanner.scan(2, img, frame_id)
+        # frame = sudokuscanner.scan(2, img, frame_id)
+
+        processManager.startAnalysis(2, img, frame_id)
+        
+        frame = None
+
+        while True:
+            try:
+                frame = processManager.getFrame(frame_id)
+                # print("Frame released")
+                break
+            except:
+                time.sleep(0.05)
 
         frame_id += 1
 
@@ -48,5 +65,6 @@ def runApp():
     cv2.destroyAllWindows()
 
 
-runApp()
 
+if __name__ == "__main__":
+    runApp()

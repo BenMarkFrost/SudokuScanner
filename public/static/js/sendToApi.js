@@ -11,7 +11,7 @@ let rollingAverageTracker = [];
 let synced = true;
 let stalled = false;
 let firstMessage = true;
-let debug = false;
+let debug = true;
 
 // Misc variables
 let frame_id = 0;
