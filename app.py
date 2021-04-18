@@ -13,6 +13,7 @@ from server.Frame import Frame
 from io import BytesIO
 import numpy as np
 import cv2
+import imutils
 
 
 app = Flask(__name__, 
