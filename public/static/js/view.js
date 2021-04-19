@@ -79,8 +79,8 @@ function displayFrame(id){
         frame = frameBuffer[id];
         delete frameBuffer[id];
 
-        // Clean up old frame files
-        tempFrame = urlCreator.revokeObjectURL(tempFrame)
+        // Clean up old frame file
+        tempFrame = urlCreator.revokeObjectURL(tempFrame);
 
         // Create new frame base on buffer
         tempFrame = urlCreator.createObjectURL(frame);

@@ -22,6 +22,7 @@ let solutionImage = {img: null, timeReceived: 0};
 let stalledNum = 0;
 let domain;
 
+
 // When debugging, use the window URL for API requests.
 // Otherwise, use CORS to access the Cloud Run instance directly.
 if (debug == true){
