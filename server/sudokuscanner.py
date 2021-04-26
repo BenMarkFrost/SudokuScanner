@@ -276,14 +276,3 @@ def getSolution(browser_id):
     except Exception as e:
         print(e)
         return np.zeros((solutionOutputSize,solutionOutputSize,3))
-
-
-
-
-# Scanning a test file at startup ensures that tensorflow is properly set up
-# This removes a delay when scanning a file for the first time in produciton.
-# left = cv2.imread("IMG_2511.JPG")
-# img = imutils.resize(left, 640)
-# scan(1, img, 1)
-
-print("SudokuScanner started successfully")

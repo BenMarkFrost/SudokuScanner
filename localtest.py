@@ -21,7 +21,6 @@ def runApp():
     while True:
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            recordSpeed.finish()
             break
 
         ret, img = camera.read()

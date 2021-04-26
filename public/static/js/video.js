@@ -6,11 +6,14 @@ let video = document.getElementById("videoInput");
 let originalImg = document.getElementById("video");
 let responseImg = document.getElementById("image");
 let loadingGif = document.getElementById("loadingGif");
+let infoPara = document.getElementById("infoPara");
+let stopBtn = document.getElementById("stopBtn");
 let mobile = false;
 let editableStream;
 let loaded = false;
 let frameRate = 15;
 let callback = false;
+let stopped = true;
 
 /**The following code is references from the below link:
  * https://dev.to/timhuang/a-simple-way-to-detect-if-browser-is-on-a-mobile-device-with-javascript-44j3
@@ -49,8 +52,8 @@ async function runWebcamCapture() {
     }
 
 
-    gifAttribute.hidden = false;
-    loadingGif.hidden = false;
+    // gifAttribute.hidden = false;
+    // loadingGif.hidden = false;
 
     /**Initialising WebRTC
     * The below code is adapted from the below link:
@@ -88,6 +91,9 @@ async function runWebcamCapture() {
             // End of reference
 
             async function processFrame(){
+
+                if (stopped) return;
+
 
                 if (!callback) {
                     // 1000ms / 15 fps = 67ms
@@ -131,10 +137,18 @@ window.addEventListener('load', function () {
  */
  function startStreaming(){
 
-    startBtn.hidden = true
-    streamDiv.hidden = false;
-    metricsBtn.hidden = false;
+    toggleState(true);
 
     runWebcamCapture();
 
 }
+
+
+function stopStreaming(){
+
+    editableStream.getVideoTracks()[0].stop();
+
+    toggleState(false);
+
+}
+

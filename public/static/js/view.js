@@ -164,6 +164,53 @@ function toggleFrameSync(sw){
 }
 
 
+/**
+ * The following code toggles the debug section of the web page.
+ */
+ function toggleMetrics(){
+
+    console.log("Clicked toggle metrics")
+
+    if (metricsDiv.hidden == true){
+        metricsDiv.hidden = false;
+        metricsBtn.innerHTML = "Hide debug metrics";
+    } else {
+        metricsDiv.hidden = true;
+        metricsBtn.innerHTML = "Show debug metrics";
+    }
+
+}
+
+
+/**
+ * This function handles setting the UI to the started or stopped state
+ * @param {Boolean} state 
+ */
+ function toggleState(state){
+
+    stopped = !state;
+
+    startBtn.hidden = state;
+    infoPara.hidden = state;
+
+    metricsBtn.hidden = !state;
+    stopBtn.hidden = !state;
+    gifAttribute.hidden = !state;
+    loadingGif.hidden = !state;
+
+    metricsDiv.hidden = true;
+    metricsBtn.innerHTML = "Show debug metrics";
+
+    originalImg.hidden = true;
+    responseImg.hidden = true;
+    streamDiv.hidden = true;
+
+    firstMessage = true;
+
+}
+
+
+
 /* The following code is referenced from the below link:
  * https://stackoverflow.com/questions/3916191/download-data-url-file
  * credit to owencm
@@ -179,19 +226,3 @@ function downloadURI(uri, name) {
 }
 // End of reference
 
-/**
- * The following code toggles the debug section of the web page.
- */
-function toggleMetrics(){
-
-    console.log("Clicked toggle metrics")
-
-    if (metricsDiv.hidden == true){
-        metricsDiv.hidden = false;
-        metricsBtn.innerHTML = "Hide debug metrics";
-    } else {
-        metricsDiv.hidden = true;
-        metricsBtn.innerHTML = "Show debug metrics";
-    }
-
-}

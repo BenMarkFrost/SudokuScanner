@@ -102,9 +102,14 @@ def solution():
         return e
 
 
+
+# Scanning a test file at startup ensures that tensorflow is properly set up
+# This removes a delay when scanning a file for the first time in produciton.
 left = cv2.imread("IMG_2511.JPG")
 img = imutils.resize(left, 640)
 sudokuscanner.scan(1, img, 1)
+
+print("SudokuScanner started successfully")
 
 # In-built Flask threading is enabled spawning a new thread for each API request
 app.run(host='0.0.0.0', threaded=True)

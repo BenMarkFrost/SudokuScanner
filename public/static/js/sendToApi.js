@@ -11,7 +11,7 @@ let rollingAverageTracker = [];
 let synced = true;
 let stalled = false;
 let firstMessage = true;
-let debug = false;
+let debug = true;
 
 // Misc variables
 let frame_id = 0;
@@ -106,6 +106,8 @@ function upload(frame){
             solutionImg = urlCreator.createObjectURL(this.response);
 
             responseImg.src = solutionImg;
+
+            if (stopped) return;
 
             if (stalled == false){
 

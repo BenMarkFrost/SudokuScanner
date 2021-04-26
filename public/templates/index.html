@@ -19,11 +19,12 @@
     <section class="team-grid">
         <div class="container">
             <div class="intro">
-                <h2 class="text-center">SudokuScanner</h2>
-                <p class="text-center" style="margin-bottom: 30px;margin-top: 0px;">Point your camera at an unsolved sudoku and see the solution overlayed. <br> The video will be muted and encrypted, then streamed to a server for analysis, after which it will be deleted.</p>
+                <h1 class="text-center"><br>SudokuScanner<br></h1>
+                <p id="infoPara" class="text-center" style="margin-bottom: 30px;margin-top: 0px; font-size: 150%;">Point your camera at an unsolved sudoku and see the solution overlayed. <br><br> The video will be muted and encrypted, then streamed to a server for analysis, after which it will be deleted.</p>
             </div>
             <div style="text-align: center; margin-bottom: 30px;">
                 <button hidden class="text-center btn btn-secondary btn-sm" id="metricsDropDownBtn" onclick="toggleMetrics()">Show debug metrics</button>
+                <button hidden class="text-center btn btn-secondary btn-sm" id="stopBtn" onclick="stopStreaming()">Stop</button>
             </div>
             <div id="metricsDiv" hidden>
                 <h4 class="text-center" style="margin-top: 30px;">Metrics</h2>
