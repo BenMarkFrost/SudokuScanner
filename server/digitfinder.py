@@ -253,7 +253,7 @@ def classifyDigits(digits):
 
 
 
-@func_set_timeout(1.5)
+@func_set_timeout(3)
 def timedSolve(sudoku):
     """
     timedSolve() solves a given sudoku puzzle with a time limit set by the timout decorator above.

@@ -19,7 +19,6 @@ import imutils
 clientsDict = {}
 
 
-
 def scan(browser_id, img, frame_id):
     """
     Scan() holds the main flow of the analysis and calls the other functions.
