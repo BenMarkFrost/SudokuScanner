@@ -239,7 +239,6 @@ def frameBuffer(frame, client):
         print(f"Waiting for {earliestFrame}, I'm: {frame.frame_id}")
         if i == 4:
             print("Gave up waiting")
-            # client.purgeBefore(frame.frame_id)
             break
         # Sleep for 50ms
         time.sleep(0.05)
