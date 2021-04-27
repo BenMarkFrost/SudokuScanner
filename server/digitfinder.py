@@ -24,7 +24,7 @@ from sudoku import Sudoku
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # Load the digit classification model
-model = keras.models.load_model("model/digitModel10.h5")
+model = keras.models.load_model("model/digitModel11.h5")
 
 
 def calculateThreshold(img):
@@ -253,7 +253,7 @@ def classifyDigits(digits):
 
 
 
-@func_set_timeout(2)
+@func_set_timeout(1.5)
 def timedSolve(sudoku):
     """
     timedSolve() solves a given sudoku puzzle with a time limit set by the timout decorator above.
