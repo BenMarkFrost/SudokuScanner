@@ -116,6 +116,7 @@ def reAnalyseTimer(frame, client):
     thread = Thread(target = analyseFrame, args = (frame, client), daemon=True)
     thread.start()
 
+    frame.solutionFrame = client.solved
 
 
 
@@ -146,7 +147,6 @@ def analyseFrame(frame, client):
         client.backgroundForOutput = background
     if currentFrameSolved:
         client.solved = True
-        frame.solutionFrame = True
 
     # Only signal that this client is in need of analysis if this frame was not solved.
     client.reAnalyse = not currentFrameSolved
