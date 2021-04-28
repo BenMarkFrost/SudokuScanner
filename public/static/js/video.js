@@ -38,6 +38,7 @@ if(/Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+// End of reference
 
 /**
  * This function initialises the system once the start button is clicked.

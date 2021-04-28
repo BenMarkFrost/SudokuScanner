@@ -25,11 +25,3 @@ class Client:
     def next(self):
         nextFrame = min(self.frames)
         return nextFrame
-
-    def purgeBefore(self, frame_id):
-        print(self.frames)
-        tempFrames = self.frames
-        for i in self.frames:
-            if i < int(frame_id):
-                tempFrames.remove(i)
-        self.frames = tempFrames

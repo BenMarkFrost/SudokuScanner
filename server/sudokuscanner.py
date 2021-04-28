@@ -65,7 +65,7 @@ def scan(browser_id, img, frame_id):
         """
         Step 2 - Solving the sudoku
         """
-        manageClients(frame, client)
+        reAnalyseTimer(frame, client)
 
         frame.skewedSolution = digitfinder.warp(frame.img, frame.combinedDigits, frame.border)
 
@@ -85,9 +85,9 @@ def scan(browser_id, img, frame_id):
 
 
 
-def manageClients(frame, client):
+def reAnalyseTimer(frame, client):
     """
-    ManageClients() is called to determine if a frame should be re-analysed.
+    ReAnalyseTimer() is called to determine if a frame should be re-analysed.
 
     @params 
     frame : Frame object
@@ -116,7 +116,6 @@ def manageClients(frame, client):
     thread = Thread(target = analyseFrame, args = (frame, client), daemon=True)
     thread.start()
 
-    frame.solutionFrame = True
 
 
 
@@ -147,6 +146,7 @@ def analyseFrame(frame, client):
         client.backgroundForOutput = background
     if currentFrameSolved:
         client.solved = True
+        frame.solutionFrame = True
 
     # Only signal that this client is in need of analysis if this frame was not solved.
     client.reAnalyse = not currentFrameSolved
