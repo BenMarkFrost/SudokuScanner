@@ -15,11 +15,11 @@ Alternatively, pull the code from GitHub, and with Python 3 installed, run the f
 4.	pip3 install tensorflow==2.4.2
 #### If running Linux:
 ---
-6.	sudo apt-get update
-7.	sudo apt-get install ffmpeg libsm6 libxext6 -y
+5.	sudo apt-get update
+6.	sudo apt-get install ffmpeg libsm6 libxext6 -y
 ---
 ###
-8.	python app.py <br/> <br/>
+7.	python app.py <br/> <br/>
 
 
 Using either of these approaches, the server can then be accessed at localhost:5000 in your browser.
