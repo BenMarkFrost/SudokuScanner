@@ -9,7 +9,7 @@ With Docker installed on your machine, simply run the following command which wi
 1.	 docker run -p 5000:5000 benmarkfrost/sudoku <br/> <br/>
 
 Alternatively, pull the code from GitHub, and with Python 3 installed, run the following setup lines from the root folder.
-1.	git pull https://github.com/BenMarkFrost/SudokuScanner
+1.	git clone https://github.com/BenMarkFrost/SudokuScanner
 2.	cd SudokuScanner
 3.	pip3 install -r requirements.txt
 4.	pip3 install tensorflow==2.4.2
