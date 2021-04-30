@@ -2,6 +2,7 @@
 This file records the speed of different models for use in digit classification.
 """
 
+## External libraries
 from tensorflow import keras
 import cv2
 import numpy as np
@@ -9,6 +10,7 @@ from tqdm import tqdm
 import os
 import time
 import numpy as np
+##
 
 os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 

@@ -2,13 +2,16 @@
 This file is used in by localtest.py record the speed of the system.
 """
 
+## External libraries
 import cv2
 import time
-from server import sudokuscanner
-from tests import saveImage
 import imutils
 import pandas as pd
 import numpy as np
+##
+
+from server import sudokuscanner
+from tests import saveImage
 
 num = 1
 

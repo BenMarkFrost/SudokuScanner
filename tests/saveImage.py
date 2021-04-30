@@ -2,8 +2,10 @@
 This file is a simply saves images to folders for testing.
 """
 
+## External libraries
 from pathlib import Path
 import cv2
+##
 
 directory = "cache/"
 # Dictionary holding directories and the corresponding highest value of file name in each.

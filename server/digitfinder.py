@@ -5,6 +5,7 @@ on images with no effect on any variables other than those they have been passed
 This file is set up in the general order in which the functions are called.
 """
 
+## External libraries
 import numpy as np
 import imutils
 from imutils.perspective import four_point_transform
@@ -18,6 +19,7 @@ from memoization import cached
 from func_timeout import func_set_timeout
 from tests import saveImage
 from sudoku import Sudoku
+##
 
 
 # Disable GPU usage since this is being deployed in Docker

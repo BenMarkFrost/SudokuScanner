@@ -4,10 +4,13 @@ The video stream will be processed and dispalyed directly on the host machine.
 Press 'q' to exit the window.
 """
 
+## External libraries
 import cv2
+import numpy as np
+##
+
 from server import sudokuscanner
 from tests import recordSpeed
-import numpy as np
 
 frame_id = 0
 

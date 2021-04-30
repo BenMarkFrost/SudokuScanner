@@ -5,15 +5,19 @@ Individual Project 2021
 This file serves as the entry point to the SudokuScanner API
 """
 
+## External libraries
 from flask import Flask, request, Response, render_template, send_file, make_response
 from flask_cors import CORS, cross_origin
 from PIL import Image
-from server import sudokuscanner
-from server.Frame import Frame
 from io import BytesIO
 import numpy as np
 import cv2
 import imutils
+##
+
+
+from server import sudokuscanner
+from server.Frame import Frame
 
 
 app = Flask(__name__, 
