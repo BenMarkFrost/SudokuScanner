@@ -17,10 +17,8 @@ import math
 from tensorflow import keras
 from memoization import cached
 from func_timeout import func_set_timeout
-from tests import saveImage
 from sudoku import Sudoku
 ##
-
 
 # Disable GPU usage since this is being deployed in Docker
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'

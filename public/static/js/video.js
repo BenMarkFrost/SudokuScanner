@@ -33,7 +33,7 @@ if(/Android|android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test
 
 /**The below code is referenced from the below link:
  * https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep
- * Credit to Gsamaras
+ * Credit to Dan Dascalescu
 */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

@@ -213,7 +213,7 @@ function toggleFrameSync(sw){
 
 /* The following code is referenced from the below link:
  * https://stackoverflow.com/questions/3916191/download-data-url-file
- * credit to owencm
+ * credit to Owencm
  */ 
 function downloadURI(uri, name) {
     var link = document.createElement("a");
